@@ -1,10 +1,9 @@
+import logging
 from zbx.builder import *
 
 
 def discovery(tpl):
-    print 'tpl parent: ', tpl.parent
     rule = tpl.discovery_rules.new('Circus discovery', key='circus.discovery')
-    print 'rule parent: ', rule.parent
 
     proto1 = rule.item_prototypes.new(**{
         'key': 'circus.worker.sum.numprocesses[{#WORKER}]',
@@ -13,7 +12,6 @@ def discovery(tpl):
         'description': 'Processes count for all worker processes',
         'applications': ['Circus server usage']
     })
-    print 'proto1 parent: ', proto1.parent
 
     proto2 = rule.item_prototypes.new(**{
         'key': 'circus.worker.sum.mem[{#WORKER}]',
@@ -69,11 +67,11 @@ def discovery(tpl):
 
 def generate():
     doc = Document()
-    print 'doc parent: ', doc.parent
+
     tpl = doc.templates.new('Template - Generic - Circus Process Manager',
         groups=['Templates - Services'], applications=['Circus server usage'])
 
-    print 'tpl parent: ', tpl.parent
+
     item1 = tpl.items.new(**{
         'name': 'Circus - Number of processes',
         'key': 'circus.numprocesses',
@@ -81,7 +79,7 @@ def generate():
         'description': 'Total number of circusd processes',
         'applications': ['Circus server usage']
     })
-    print 'item parent: ', item1.parent
+
 
     item2 = tpl.items.new(**{
         'name': 'Circus - Number of children',
@@ -168,7 +166,7 @@ def generate():
     # discovery rules
     discovery(tpl)
 
-    dumps(doc)
+    return dumps(doc)
 
 if __name__ == '__main__':
     print generate()

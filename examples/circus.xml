@@ -1,10 +1,11 @@
 <?xml version="1.0" ?>
 <zabbix_export>
   <version>2.0</version>
-  <date>2014-05-06T12:38:11.403696</date>
+  <date>2014-05-06T17:01:04.542364</date>
   <templates>
     <template>
       <name>Template - Generic - Circus Process Manager</name>
+      <macros/>
       <screens>
         <screen>
           <name>Generic Screen - Circus</name>
@@ -15,7 +16,7 @@
               <resource>
                 <name>Circus - Number of processes</name>
               </resource>
-              <resourcetype>1</resourcetype>
+              <resourcetype>0</resourcetype>
               <y>0</y>
               <x>0</x>
             </screen_item>
@@ -23,7 +24,7 @@
               <resource>
                 <name>Circus - Number of children</name>
               </resource>
-              <resourcetype>1</resourcetype>
+              <resourcetype>0</resourcetype>
               <y>0</y>
               <x>1</x>
             </screen_item>
@@ -31,7 +32,7 @@
               <resource>
                 <name>Circus - Memory usage</name>
               </resource>
-              <resourcetype>1</resourcetype>
+              <resourcetype>0</resourcetype>
               <y>0</y>
               <x>2</x>
             </screen_item>
@@ -39,7 +40,7 @@
               <resource>
                 <name>Circus - RSS Memory</name>
               </resource>
-              <resourcetype>1</resourcetype>
+              <resourcetype>0</resourcetype>
               <y>1</y>
               <x>0</x>
             </screen_item>
@@ -47,7 +48,7 @@
               <resource>
                 <name>Circus - VMS Memory</name>
               </resource>
-              <resourcetype>1</resourcetype>
+              <resourcetype>0</resourcetype>
               <y>1</y>
               <x>1</x>
             </screen_item>
@@ -55,7 +56,7 @@
               <resource>
                 <name>Circus - CPU usage</name>
               </resource>
-              <resourcetype>1</resourcetype>
+              <resourcetype>0</resourcetype>
               <y>1</y>
               <x>2</x>
             </screen_item>
@@ -63,7 +64,7 @@
               <resource>
                 <name>Circus - Nice</name>
               </resource>
-              <resourcetype>1</resourcetype>
+              <resourcetype>0</resourcetype>
               <y>2</y>
               <x>0</x>
             </screen_item>
@@ -77,18 +78,20 @@
       </applications>
       <discovery_rules>
         <discovery_rule>
-          <templates/>
           <key>circus.discovery</key>
-          <trigger_prototypes/>
+          <lifetime>30</lifetime>
           <graph_prototypes>
             <graph_prototype>
               <show_3d>0</show_3d>
+              <ymin_item_1>0</ymin_item_1>
               <name>Circus - Processes count for {#WORKER}</name>
               <percent_left>0.0</percent_left>
               <graph_items>
                 <graph_item>
                   <calc_fnc>2</calc_fnc>
+                  <color>C80000</color>
                   <item>
+                    <host>Template - Generic - Circus Process Manager</host>
                     <key>circus.worker.sum.numprocesses[{#WORKER}]</key>
                   </item>
                   <sortorder>0</sortorder>
@@ -102,6 +105,7 @@
               <width>900</width>
               <show_legend>1</show_legend>
               <show_work_period>1</show_work_period>
+              <ymax_item_1>0</ymax_item_1>
               <type>0</type>
               <ymin_type>0</ymin_type>
               <show_triggers>1</show_triggers>
@@ -110,12 +114,15 @@
             </graph_prototype>
             <graph_prototype>
               <show_3d>0</show_3d>
+              <ymin_item_1>0</ymin_item_1>
               <name>Circus - Memory usage for {#WORKER}</name>
               <percent_left>0.0</percent_left>
               <graph_items>
                 <graph_item>
                   <calc_fnc>2</calc_fnc>
+                  <color>009600</color>
                   <item>
+                    <host>Template - Generic - Circus Process Manager</host>
                     <key>circus.worker.sum.mem[{#WORKER}]</key>
                   </item>
                   <sortorder>0</sortorder>
@@ -129,6 +136,7 @@
               <width>900</width>
               <show_legend>1</show_legend>
               <show_work_period>1</show_work_period>
+              <ymax_item_1>0</ymax_item_1>
               <type>0</type>
               <ymin_type>0</ymin_type>
               <show_triggers>1</show_triggers>
@@ -137,12 +145,15 @@
             </graph_prototype>
             <graph_prototype>
               <show_3d>0</show_3d>
+              <ymin_item_1>0</ymin_item_1>
               <name>Circus - RSS Memory usage for {#WORKER}</name>
               <percent_left>0.0</percent_left>
               <graph_items>
                 <graph_item>
                   <calc_fnc>2</calc_fnc>
+                  <color>000096</color>
                   <item>
+                    <host>Template - Generic - Circus Process Manager</host>
                     <key>circus.worker.sum.mem_info1[{#WORKER}]</key>
                   </item>
                   <sortorder>0</sortorder>
@@ -156,6 +167,7 @@
               <width>900</width>
               <show_legend>1</show_legend>
               <show_work_period>1</show_work_period>
+              <ymax_item_1>0</ymax_item_1>
               <type>0</type>
               <ymin_type>0</ymin_type>
               <show_triggers>1</show_triggers>
@@ -164,12 +176,15 @@
             </graph_prototype>
             <graph_prototype>
               <show_3d>0</show_3d>
+              <ymin_item_1>0</ymin_item_1>
               <name>Circus - VMS Memory usage for {#WORKER}</name>
               <percent_left>0.0</percent_left>
               <graph_items>
                 <graph_item>
                   <calc_fnc>2</calc_fnc>
+                  <color>960096</color>
                   <item>
+                    <host>Template - Generic - Circus Process Manager</host>
                     <key>circus.worker.sum.mem_info2[{#WORKER}]</key>
                   </item>
                   <sortorder>0</sortorder>
@@ -183,6 +198,7 @@
               <width>900</width>
               <show_legend>1</show_legend>
               <show_work_period>1</show_work_period>
+              <ymax_item_1>0</ymax_item_1>
               <type>0</type>
               <ymin_type>0</ymin_type>
               <show_triggers>1</show_triggers>
@@ -191,12 +207,15 @@
             </graph_prototype>
             <graph_prototype>
               <show_3d>0</show_3d>
+              <ymin_item_1>0</ymin_item_1>
               <name>Circus - CPU usage for {#WORKER}</name>
               <percent_left>0.0</percent_left>
               <graph_items>
                 <graph_item>
                   <calc_fnc>2</calc_fnc>
+                  <color>009696</color>
                   <item>
+                    <host>Template - Generic - Circus Process Manager</host>
                     <key>circus.worker.sum.cpu[{#WORKER}]</key>
                   </item>
                   <sortorder>0</sortorder>
@@ -210,6 +229,7 @@
               <width>900</width>
               <show_legend>1</show_legend>
               <show_work_period>1</show_work_period>
+              <ymax_item_1>0</ymax_item_1>
               <type>0</type>
               <ymin_type>0</ymin_type>
               <show_triggers>1</show_triggers>
@@ -217,10 +237,17 @@
               <percent_right>0.0</percent_right>
             </graph_prototype>
           </graph_prototypes>
+          <snmpv3_securitylevel>0</snmpv3_securitylevel>
           <item_prototypes>
             <item_prototype>
+              <inventory_link>0</inventory_link>
+              <multiplier>0</multiplier>
+              <trends>365</trends>
+              <delay>60</delay>
+              <formula>1</formula>
               <type>2</type>
               <valuemap/>
+              <status>0</status>
               <authtype>0</authtype>
               <description>Processes count for all worker processes</description>
               <data_type>0</data_type>
@@ -234,10 +261,17 @@
                   <name>Circus server usage</name>
                 </application>
               </applications>
+              <history>7</history>
             </item_prototype>
             <item_prototype>
+              <inventory_link>0</inventory_link>
+              <multiplier>0</multiplier>
+              <trends>365</trends>
+              <delay>60</delay>
+              <formula>1</formula>
               <type>2</type>
               <valuemap/>
+              <status>0</status>
               <authtype>0</authtype>
               <description>Percentage of worker processes memory usage</description>
               <data_type>0</data_type>
@@ -251,10 +285,17 @@
                   <name>Circus server usage</name>
                 </application>
               </applications>
+              <history>7</history>
             </item_prototype>
             <item_prototype>
+              <inventory_link>0</inventory_link>
+              <multiplier>0</multiplier>
+              <trends>365</trends>
+              <delay>60</delay>
+              <formula>1</formula>
               <type>2</type>
               <valuemap/>
+              <status>0</status>
               <authtype>0</authtype>
               <description>Resident Set Size Memory in bytes (RSS) for all worker processes</description>
               <data_type>0</data_type>
@@ -268,10 +309,17 @@
                   <name>Circus server usage</name>
                 </application>
               </applications>
+              <history>7</history>
             </item_prototype>
             <item_prototype>
+              <inventory_link>0</inventory_link>
+              <multiplier>0</multiplier>
+              <trends>365</trends>
+              <delay>60</delay>
+              <formula>1</formula>
               <type>2</type>
               <valuemap/>
+              <status>0</status>
               <authtype>0</authtype>
               <description>Resident Set Size Memory in bytes (VMS) for all worker processes</description>
               <data_type>0</data_type>
@@ -285,10 +333,17 @@
                   <name>Circus server usage</name>
                 </application>
               </applications>
+              <history>7</history>
             </item_prototype>
             <item_prototype>
+              <inventory_link>0</inventory_link>
+              <multiplier>0</multiplier>
+              <trends>365</trends>
+              <delay>60</delay>
+              <formula>1</formula>
               <type>2</type>
               <valuemap/>
+              <status>0</status>
               <authtype>0</authtype>
               <description>Percentage of CPU usage of a worker</description>
               <data_type>0</data_type>
@@ -302,13 +357,17 @@
                   <name>Circus server usage</name>
                 </application>
               </applications>
+              <history>7</history>
             </item_prototype>
           </item_prototypes>
+          <delay>3600</delay>
           <type>2</type>
-          <interfaces/>
-          <applications/>
-          <groups/>
+          <snmpv3_authprotocol>0</snmpv3_authprotocol>
+          <status>0</status>
+          <authtype>0</authtype>
+          <snmpv3_privprotocol>0</snmpv3_privprotocol>
           <name>Circus discovery</name>
+          <filter>:</filter>
         </discovery_rule>
       </discovery_rules>
       <groups>
@@ -318,8 +377,14 @@
       </groups>
       <items>
         <item>
+          <inventory_link>0</inventory_link>
+          <multiplier>0</multiplier>
+          <trends>365</trends>
+          <delay>60</delay>
+          <formula>1</formula>
           <type>2</type>
           <valuemap/>
+          <status>0</status>
           <authtype>0</authtype>
           <description>Total number of circusd processes</description>
           <data_type>0</data_type>
@@ -333,10 +398,17 @@
               <name>Circus server usage</name>
             </application>
           </applications>
+          <history>7</history>
         </item>
         <item>
+          <inventory_link>0</inventory_link>
+          <multiplier>0</multiplier>
+          <trends>365</trends>
+          <delay>60</delay>
+          <formula>1</formula>
           <type>2</type>
           <valuemap/>
+          <status>0</status>
           <authtype>0</authtype>
           <description>Total number of circusd children</description>
           <data_type>0</data_type>
@@ -350,10 +422,17 @@
               <name>Circus server usage</name>
             </application>
           </applications>
+          <history>7</history>
         </item>
         <item>
+          <inventory_link>0</inventory_link>
+          <multiplier>0</multiplier>
+          <trends>365</trends>
+          <delay>60</delay>
+          <formula>1</formula>
           <type>2</type>
           <valuemap/>
+          <status>0</status>
           <authtype>0</authtype>
           <description>Percentage of circusd process memory usage</description>
           <data_type>0</data_type>
@@ -367,10 +446,17 @@
               <name>Circus server usage</name>
             </application>
           </applications>
+          <history>7</history>
         </item>
         <item>
+          <inventory_link>0</inventory_link>
+          <multiplier>0</multiplier>
+          <trends>365</trends>
+          <delay>60</delay>
+          <formula>1</formula>
           <type>2</type>
           <valuemap/>
+          <status>0</status>
           <authtype>0</authtype>
           <description>Resident Set Size Memory in bytes (RSS)</description>
           <data_type>0</data_type>
@@ -384,10 +470,17 @@
               <name>Circus server usage</name>
             </application>
           </applications>
+          <history>7</history>
         </item>
         <item>
+          <inventory_link>0</inventory_link>
+          <multiplier>0</multiplier>
+          <trends>365</trends>
+          <delay>60</delay>
+          <formula>1</formula>
           <type>2</type>
           <valuemap/>
+          <status>0</status>
           <authtype>0</authtype>
           <description>Resident Set Size Memory in bytes (VMS)</description>
           <data_type>0</data_type>
@@ -401,10 +494,17 @@
               <name>Circus server usage</name>
             </application>
           </applications>
+          <history>7</history>
         </item>
         <item>
+          <inventory_link>0</inventory_link>
+          <multiplier>0</multiplier>
+          <trends>365</trends>
+          <delay>60</delay>
+          <formula>1</formula>
           <type>2</type>
           <valuemap/>
+          <status>0</status>
           <authtype>0</authtype>
           <description>Percentage of circusd process CPU usage</description>
           <data_type>0</data_type>
@@ -418,10 +518,17 @@
               <name>Circus server usage</name>
             </application>
           </applications>
+          <history>7</history>
         </item>
         <item>
+          <inventory_link>0</inventory_link>
+          <multiplier>0</multiplier>
+          <trends>365</trends>
+          <delay>60</delay>
+          <formula>1</formula>
           <type>2</type>
           <valuemap/>
+          <status>0</status>
           <authtype>0</authtype>
           <description>Niceness of the circusd process (between -20 and 20)</description>
           <data_type>0</data_type>
@@ -435,18 +542,22 @@
               <name>Circus server usage</name>
             </application>
           </applications>
+          <history>7</history>
         </item>
       </items>
+      <template>Template - Generic - Circus Process Manager</template>
     </template>
   </templates>
   <graphs>
     <graph>
       <show_3d>0</show_3d>
+      <ymin_item_1>0</ymin_item_1>
       <name>Circus - Number of processes</name>
       <percent_left>0.0</percent_left>
       <graph_items>
         <graph_item>
           <calc_fnc>2</calc_fnc>
+          <color>969600</color>
           <item>
             <host>Template - Generic - Circus Process Manager</host>
             <key>circus.numprocesses</key>
@@ -462,6 +573,7 @@
       <width>900</width>
       <show_legend>1</show_legend>
       <show_work_period>1</show_work_period>
+      <ymax_item_1>0</ymax_item_1>
       <type>0</type>
       <ymin_type>0</ymin_type>
       <show_triggers>1</show_triggers>
@@ -470,11 +582,13 @@
     </graph>
     <graph>
       <show_3d>0</show_3d>
+      <ymin_item_1>0</ymin_item_1>
       <name>Circus - Number of children</name>
       <percent_left>0.0</percent_left>
       <graph_items>
         <graph_item>
           <calc_fnc>2</calc_fnc>
+          <color>969696</color>
           <item>
             <host>Template - Generic - Circus Process Manager</host>
             <key>circus.dstats.children</key>
@@ -490,6 +604,7 @@
       <width>900</width>
       <show_legend>1</show_legend>
       <show_work_period>1</show_work_period>
+      <ymax_item_1>0</ymax_item_1>
       <type>0</type>
       <ymin_type>0</ymin_type>
       <show_triggers>1</show_triggers>
@@ -498,11 +613,13 @@
     </graph>
     <graph>
       <show_3d>0</show_3d>
+      <ymin_item_1>0</ymin_item_1>
       <name>Circus - Memory usage</name>
       <percent_left>0.0</percent_left>
       <graph_items>
         <graph_item>
           <calc_fnc>2</calc_fnc>
+          <color>FF0000</color>
           <item>
             <host>Template - Generic - Circus Process Manager</host>
             <key>circus.dstats.mem</key>
@@ -518,6 +635,7 @@
       <width>900</width>
       <show_legend>1</show_legend>
       <show_work_period>1</show_work_period>
+      <ymax_item_1>0</ymax_item_1>
       <type>0</type>
       <ymin_type>0</ymin_type>
       <show_triggers>1</show_triggers>
@@ -526,11 +644,13 @@
     </graph>
     <graph>
       <show_3d>0</show_3d>
+      <ymin_item_1>0</ymin_item_1>
       <name>Circus - RSS Memory</name>
       <percent_left>0.0</percent_left>
       <graph_items>
         <graph_item>
           <calc_fnc>2</calc_fnc>
+          <color>00FF00</color>
           <item>
             <host>Template - Generic - Circus Process Manager</host>
             <key>circus.dstats.mem_info1</key>
@@ -546,6 +666,7 @@
       <width>900</width>
       <show_legend>1</show_legend>
       <show_work_period>1</show_work_period>
+      <ymax_item_1>0</ymax_item_1>
       <type>0</type>
       <ymin_type>0</ymin_type>
       <show_triggers>1</show_triggers>
@@ -554,11 +675,13 @@
     </graph>
     <graph>
       <show_3d>0</show_3d>
+      <ymin_item_1>0</ymin_item_1>
       <name>Circus - VMS Memory</name>
       <percent_left>0.0</percent_left>
       <graph_items>
         <graph_item>
           <calc_fnc>2</calc_fnc>
+          <color>0000FF</color>
           <item>
             <host>Template - Generic - Circus Process Manager</host>
             <key>circus.dstats.mem_info2</key>
@@ -574,6 +697,7 @@
       <width>900</width>
       <show_legend>1</show_legend>
       <show_work_period>1</show_work_period>
+      <ymax_item_1>0</ymax_item_1>
       <type>0</type>
       <ymin_type>0</ymin_type>
       <show_triggers>1</show_triggers>
@@ -582,11 +706,13 @@
     </graph>
     <graph>
       <show_3d>0</show_3d>
+      <ymin_item_1>0</ymin_item_1>
       <name>Circus - CPU usage</name>
       <percent_left>0.0</percent_left>
       <graph_items>
         <graph_item>
           <calc_fnc>2</calc_fnc>
+          <color>C80000</color>
           <item>
             <host>Template - Generic - Circus Process Manager</host>
             <key>circus.dstats.cpu</key>
@@ -602,6 +728,7 @@
       <width>900</width>
       <show_legend>1</show_legend>
       <show_work_period>1</show_work_period>
+      <ymax_item_1>0</ymax_item_1>
       <type>0</type>
       <ymin_type>0</ymin_type>
       <show_triggers>1</show_triggers>
@@ -610,11 +737,13 @@
     </graph>
     <graph>
       <show_3d>0</show_3d>
+      <ymin_item_1>0</ymin_item_1>
       <name>Circus - Nice</name>
       <percent_left>0.0</percent_left>
       <graph_items>
         <graph_item>
           <calc_fnc>2</calc_fnc>
+          <color>009600</color>
           <item>
             <host>Template - Generic - Circus Process Manager</host>
             <key>circus.dstats.nice</key>
@@ -630,6 +759,7 @@
       <width>900</width>
       <show_legend>1</show_legend>
       <show_work_period>1</show_work_period>
+      <ymax_item_1>0</ymax_item_1>
       <type>0</type>
       <ymin_type>0</ymin_type>
       <show_triggers>1</show_triggers>

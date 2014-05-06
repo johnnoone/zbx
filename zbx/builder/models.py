@@ -52,9 +52,10 @@ class Field(object):
 
 
 class SetField(Field):
-    def __init__(self, model, xml_tag=None, **kwargs):
+    def __init__(self, model, xml_tag=None, allow_empty=False, **kwargs):
         self.model = model
         self.xml_tag = xml_tag
+        self.allow_empty = allow_empty
         super(SetField, self).__init__(**kwargs)
 
     def __set__(self, obj, value):
@@ -66,15 +67,18 @@ class SetField(Field):
 
     def get_default(self, parent):
         logging.debug('sf: %s > %s', parent, self.model)
-        return Collection(self.model, parent, self.default)
+        value = Collection(self.model, parent, self.default)
+        value.allow_empty = self.allow_empty
+        return value
 
     def contribute_to_class(self, cls, name):
         super(SetField, self).contribute_to_class(cls, name)
 
 
 class ReferenceField(Field):
-    def __init__(self, model, **kwargs):
+    def __init__(self, model, append_host=False, **kwargs):
         self.model = model
+        self.append_host = append_host
         super(ReferenceField, self).__init__(**kwargs)
 
     def __set__(self, obj, value):
@@ -84,7 +88,9 @@ class ReferenceField(Field):
         obj._values[self.key].clear()
 
     def get_default(self, parent):
-        return Reference(self.model, parent, self.default)
+        """Initialise a value will Model hydratation
+        """
+        return Reference(self.model, parent, self.default, self.append_host)
 
 
 class FixedSizeField(Field):
@@ -136,18 +142,20 @@ class ColorField(Field):
     def __get__(self, obj, type=None):
         return obj._values[self.key] or self.colors.next()
 
+
 class Reference(object):
-    def __init__(self, model, parent, default=None):
+    def __init__(self, model, parent, default=None, append_host=False):
+        self.append_host = append_host
         if isinstance(model, str):
             mod, sep, cls = model.rpartition('.')
             m = importlib.import_module(mod or __package__)
             model = getattr(m, cls)
         self.model = model
         self.parent = parent
+        self.instance = None
+        self.value = None
         if default:
             self.update(default)
-            self.instance = default
-            self.value = default
 
     def update(self, obj):
         if obj is None:
@@ -163,8 +171,10 @@ class Reference(object):
             raise ValueError('obj must be a {}'.format(self.model))
 
     def get_reference(self):
-        return self.value or self.instance.reference()
-
+        value = self.value or self.instance.reference()
+        if self.append_host:
+            value.setdefault('host', self.parent.document_host().name)
+        return value
 
 class Collection(MutableSet):
     def __init__(self, model, parent, instances=None):
@@ -234,8 +244,6 @@ class Collection(MutableSet):
                 obj = self.model(obj)
             elif not isinstance(obj, self.model):
                 raise ValidationError('obj is not a {}'.format(self.model))
-            else:
-                obj = obj.clone()
         except ValidationError:
             raise
         except Exception as error:
@@ -303,10 +311,23 @@ class Model(object):
     def children(self):
         fields = self._values.keys()
         for key in fields:
-            yield key, getattr(self, key)
+            value = getattr(self, key)
+            if value is not None:
+                yield key, value
 
-    def clone(self):
-        return copy(self)
+    def ancestors(self):
+        """Returns all ancestors"""
+        parent = self.parent
+        while parent:
+            yield parent
+            parent = parent.parent
+
+    def document_host(self):
+        """Returns the document host (used into references...)
+        """
+        for parent in self.ancestors():
+            if isinstance(parent.parent.parent, Document):
+                return parent
 
     def reference(self):
         raise NotImplementedError
@@ -370,20 +391,24 @@ class Item(Model):
     port = Field(description='Item custom port')
     name = Field(description='Item name')
     key = Field(description='Item key')
-    delay = Field(description='Check interval')
-    history = Field(description='How long to keep item history (days)')
-    trends = Field(description='How long to keep item trends (days)')
-    status = Field(description='Item status')
+    delay = Field(60, description='Check interval')
+    history = Field(7, description='How long to keep item history (days)')
+    trends = Field(365, description='How long to keep item trends (days)')
+    status = Field(0, choices=(
+        (0, 'enabled item'),
+        (1, 'disabled item'),
+        (3, 'unsupported item')
+    ), description='Item status')
     value_type = Field(3, choices=(
-        (3, 'numeric_unsigned'),
         (0, 'numeric_float'),
         (1, 'character'),
         (2, 'log'),
+        (3, 'numeric_unsigned'),
         (4, 'text')
     ), description='Value type')
     trapper_hosts = Field(description='')
-    units = Field(description='Value units')
-    multiplier = Field(description='Value multiplier')
+    units = Field('', description='Value units')
+    multiplier = Field(0, description='Value multiplier')
     delta = Field(0, choices=(
         (0, 'as_is'),
         (1, 'delta_per_second'),
@@ -393,7 +418,7 @@ class Item(Model):
     snmpv3_securitylevel = Field(description='SNMPv3 security level')
     snmpv3_authpassphrase = Field(description='SNMPv3 authentication phrase')
     snmpv3_privpassphrase = Field(description='SNMPv3 private phrase')
-    formula = Field(description='')
+    formula = Field(1, description='')
     delay_flex = Field(description='Flexible delay')
     params = Field(description='')
     ipmi_sensor = Field(description='IPMI sensor')
@@ -414,12 +439,12 @@ class Item(Model):
     privatekey = Field(description='')
     interface_ref = Field(description='Reference to host interface')
     description = Field(description='Item description')
-    inventory_link = Field(description='Host inventory field number, '
-                                       'that will be updated with the '
-                                       'value returned by the item')
+    inventory_link = Field(0,description='Host inventory field number, '
+                                         'that will be updated with the '
+                                         'value returned by the item')
     applications = SetField(model=Application, description='Item applications')
     valuemap = SetField(model=Valuemap,
-                        description='Value map assigned to item')
+                        description='Value map assigned to item', allow_empty=True)
 
     def __init__(self, name, **fields):
         logging.debug('__init__ %s', self)
@@ -428,19 +453,16 @@ class Item(Model):
 
     def reference(self):
         response = {
-            'key': self.key
+            'key': self.key,
         }
 
-        parent = self.parent
-        print self, '>',
-        while parent:
-            print parent, '>',
+        chaining = [self]
+        for parent in self.ancestors():
+            chaining.append(parent)
             if isinstance(parent, (Host, Template)):
                 response['host'] = parent.name
                 break
-            else:
-                parent = parent.parent
-        print
+        logging.debug('chaining: %s', ' > '.join(repr(p) for p in chaining))
         return response
 
     def expression(self):
@@ -498,14 +520,17 @@ class Template(Model):
     xml_tag = 'template'
 
     name = Field()
+    template = Field()
     groups = SetField(model=Group)
     applications = SetField(model=Application)
     items = SetField(model=Item)
     screens = SetField(model='Screen')
     discovery_rules = SetField(model='DiscoveryRule')
+    macros = SetField(model='Macro', allow_empty=True)
 
     def __init__(self, name, **fields):
         self.name = name
+        fields.setdefault('template', name)
         self.update(fields)
 
 
@@ -527,7 +552,7 @@ class Host(Model):
     interfaces = SetField(model=Interface)
     items = SetField(model=Item)
     discovery_rules = SetField(model='DiscoveryRule')
-    macros = SetField(model='Macro')
+    macros = SetField(model='Macro', allow_empty=True)
 
     def __init__(self, name, **fields):
         self.name = name
@@ -541,7 +566,24 @@ class DiscoveryRule(Model):
     name = Field(description='Visible discovery rule name')
     description = Field()
     type = Field(2)
-    status = Field(description='Host Status')
+    status = Field(0, choices=(
+        (0, 'Zabbix agent'),
+        (1, 'SNMPv1 agent'),
+        (2, 'Zabbix trapper'),
+        (3, 'simple check'),
+        (4, 'SNMPv2 agent'),
+        (5, 'Zabbix internal'),
+        (6, 'SNMPv3 agent'),
+        (7, 'Zabbix agent (active)'),
+        (8, 'Zabbix aggregate'),
+        (10, 'external check'),
+        (11, 'database monitor'),
+        (12, 'IPMI agent'),
+        (13, 'SSH agent'),
+        (14, 'TELNET agent'),
+        (15, 'calculated'),
+        (16, 'JMX agent'),
+    ), description='Host Status')
     proxy = Field(description='Proxy name')
     ipmi_authtype = Field(description='IPMI authentication type')
     ipmi_privilege = Field(description='IPMI privilege')
@@ -551,13 +593,42 @@ class DiscoveryRule(Model):
     templates = SetField(model=Template)
     groups = SetField(model=Group)
     interfaces = SetField(model=Interface)
-    filter = Field()
-    delay = Field()
+    filter = Field(':')
+    delay = Field(3600)
     delay_flex = Field()
-    lifetime = Field()
+    lifetime = Field(30)
     item_prototypes = SetField(model='Item', xml_tag='item_prototype')
     trigger_prototypes = SetField(model='Trigger', xml_tag='trigger_prototype')
     graph_prototypes = SetField(model='Graph', xml_tag='graph_prototype')
+    authtype = Field(0, choices=(
+        (0, 'password'),
+        (1, 'public key')
+    ), description='SSH authentication method. '
+                   'Used only by SSH agent item prototypes')
+
+
+    snmp_community = Field()
+    snmp_oid = Field()
+    allowed_hosts = Field()
+
+    snmpv3_contextname = Field()
+    snmpv3_securityname = Field()
+    snmpv3_securitylevel = Field(0)
+    snmpv3_authprotocol = Field(0)
+    snmpv3_authpassphrase = Field()
+    snmpv3_privprotocol = Field(0)
+    snmpv3_privpassphrase = Field()
+
+    params = Field()
+
+    ipmi_sensor = Field()
+    username = Field()
+    password = Field()
+    publickey = Field()
+    privatekey = Field()
+    port = Field()
+    host_prototypes = SetField(model='Graph', xml_tag='host_prototype')
+
 
     def __init__(self, name, **fields):
         self.name = name
@@ -615,7 +686,8 @@ class Graph(Model):
         (1, 'fixed'),
         (2, 'item')
     ))
-    ymax_item_1 = Field()
+    ymin_item_1 = Field(0)
+    ymax_item_1 = Field(0)
     graph_items = SetField(model='GraphItem')
 
     def __init__(self, name, **fields):
@@ -624,17 +696,16 @@ class Graph(Model):
 
     def reference(self):
         response = {
-            'name': self.name
+            'name': self.name,
         }
 
-        parent = self.parent
-        while parent:
+        chaining = [self]
+        for parent in self.ancestors():
+            chaining.append(parent)
             if isinstance(parent, (Host, Template)):
                 response['host'] = parent.name
                 break
-            else:
-                parent = parent.parent
-
+        logging.debug('chaining: %s', ' > '.join(repr(p) for p in chaining))
         return response
 
 
@@ -754,11 +825,10 @@ class Screen(Model):
         yield 'screen_items', screen_items
 
 
-
 class ScreenItem(Model):
     xml_tag = 'screen_item'
 
-    resourcetype = Field(1, choices=(
+    resourcetype = Field(0, choices=(
         (0, 'graph'),
         (1, 'simple graph'),
         (2, 'map'),
@@ -777,7 +847,7 @@ class ScreenItem(Model):
         (15, 'system status'),
         (16, 'status of host triggers')
     ))
-    resource = ReferenceField(model='Graph')
+    resource = ReferenceField(model='Graph', append_host=False)
     x = Field() # virtual field, it will be overridden by parent!
     y = Field() # virtual field, it will be overridden by parent!
 
