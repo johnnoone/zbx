@@ -4,7 +4,6 @@ __all__ = ['Application', 'DiscoveryRule', 'Document', 'Graph', 'GraphItem',
 
 from collections import OrderedDict, MutableSet
 from copy import copy
-import datetime
 import logging
 import importlib
 import math
@@ -858,40 +857,10 @@ class Document(Model):
     xml_tag = 'zabbix_export'
 
     templates = SetField(model=Template)
-    graphs = SetField(model=Graph)
+    graphs = SetField(model='Graph')
     hosts = SetField(model='Host')
     screens = SetField(model='Screen')
 
-    def __init__(self):
-        self.date = datetime.datetime.now()
-
-    def children(self):
-        yield 'version', '2.0'
-        yield 'date', self.date.isoformat()
-        for key, value in super(Document, self).children():
-            yield key, value
-        yield 'groups', self.groups
-
-    @property
-    def groups(self):
-        """Extract groups from descendant
-        """
-        def extract(obj):
-            if isinstance(obj, Group):
-                yield obj
-            if isinstance(obj, Model):
-                for key, value in obj.children():
-                    for group in extract(value):
-                        yield group
-            if isinstance(obj, (Collection, set, list, tuple)):
-                for value in obj:
-                    for group in extract(value):
-                        yield group
-
-        groups = set()
-        for key, value in super(Document, self).children():
-            groups.update(extract(value))
-        return groups
 
 class Screen(Model):
     xml_tag = 'screen'
