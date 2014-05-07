@@ -395,6 +395,22 @@ class Application(Model):
         self.name = name
         self.update(fields)
 
+    def __eq__(self, other):
+        return isinstance(other, Application) and other.name == self.name
+
+    def __cmp__(self, other):
+        if not isinstance(other, Application):
+            raise TypeError('you cannot compare these 2 objects')
+
+        if other.name == self.name:
+            return 0
+        if other.name < self.name:
+            return -1
+        return 1
+
+    def __hash__(self):
+        return id(self.name)
+
 
 class Group(Model):
     xml_tag = 'group'
@@ -404,6 +420,22 @@ class Group(Model):
     def __init__(self, name, **fields):
         self.name = name
         self.update(fields)
+
+    def __eq__(self, other):
+        return isinstance(other, Group) and other.name == self.name
+
+    def __cmp__(self, other):
+        if not isinstance(other, Group):
+            raise TypeError('you cannot compare these 2 objects')
+
+        if other.name == self.name:
+            return 0
+        if other.name < self.name:
+            return -1
+        return 1
+
+    def __hash__(self):
+        return id(self.name)
 
 
 class Valuemap(Model):
@@ -620,7 +652,7 @@ class Host(Model):
         for key, value in super(Host, self).children():
             if key == 'applications':
                 # must append every descendant applications
-                value = self.extract(Application)
+                value = set(self.extract(Application))
             yield key, value
 
 
