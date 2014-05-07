@@ -16,7 +16,7 @@ class ChoiceValidator(object):
     def __call__(self, value):
         for k, v in self.choices:
             if value == k:
-                return value
+                return k
             if value == v:
                 return k
         else:

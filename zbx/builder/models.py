@@ -145,7 +145,7 @@ class ElasticField(Field):
                 value = int(math.ceil(float(a) / b))
             except TypeError:
                 logging.error('failed with items:%s %s', a, b)
-        return value
+        return max(1, value)
 
     def __set__(self, obj, value):
         obj._values[self.key] = self.validate(value)
@@ -356,6 +356,29 @@ class Model(object):
     def reference(self):
         raise NotImplementedError
 
+    def extract(self, model):
+        """Extract model from me and descendant
+        """
+        if not issubclass(model, Model):
+            raise ValueError('must be a Model type !')
+
+        groups = set()
+        for key, value in super(Host, self).children():
+            groups.update(self._extract(value, model))
+        return groups
+
+    def _extract(self, obj, model):
+        if isinstance(obj, model):
+            yield obj
+        if isinstance(obj, Model):
+            for key, value in obj.children():
+                for group in self._extract(value, model):
+                    yield group
+        if isinstance(obj, (Collection, set, list, tuple)):
+            for value in obj:
+                for group in self._extract(value, model):
+                    yield group
+
     def __repr__(self):
         return '<{}({}, parent={})>'.format(
             self.__class__.__name__,
@@ -502,7 +525,7 @@ class Interface(Model):
     xml_tag = 'interface'
 
     ip = Field(description='IP address, can be either IPv4 or IPv6')
-    dns = Field(description='DNS name')
+    dns = Field('', description='DNS name')
     port = Field(description='Port number')
     type = Field(1, choices=(
         (1, 'agent'),
@@ -518,14 +541,14 @@ class Interface(Model):
         (0, 'Not default interface'),
         (1, 'Default interface')
     ), description='Interface status')
-    interface_ref = Field(description='Interface reference name '
-                                      'to be used in items.')
+    interface_ref = Field('if1', description='Interface reference name '
+                                             'to be used in items.')
 
     def __init__(self, ident, **fields):
-        ip, port, dns = None, None, None
+        ip, port, dns = '', '', ''
         if ':' in ident:
             ident, sep, b = ident.rpartition(':')
-            port = int(port)
+            port = int(b)
 
         if ident:
             if ident.split('.')[-1].isdigit():
@@ -536,7 +559,7 @@ class Interface(Model):
         fields.setdefault('ip', ip)
         fields.setdefault('dns', dns)
         fields.setdefault('port', port)
-
+        fields.setdefault('useip', False if fields['dns'] else True)
         self.update(fields)
 
 
@@ -558,29 +581,47 @@ class Template(Model):
         self.update(fields)
 
 
+    def children(self):
+        for key, value in super(Template, self).children():
+            yield key, value
+
+
 class Host(Model):
     xml_tag = 'host'
 
     host = Field(description='Host name')
     name = Field(description='Visible host name')
-    description = Field()
-    interfaces = SetField(model=Interface)
-    status = Field(description='Host Status')
-    applications = SetField(model=Application)
-    items = SetField(model=Item)
-    templates = SetField(model='Template')
+    proxy = Field('', description='Proxy name')
+    status = Field(0, choices=(
+        (0, 'monitored'),
+        (1, 'unmonitored'),
+    ), description='Host Status')
+    ipmi_authtype = Field(-1, description='IPMI authentication type')
+    ipmi_privilege = Field(2, description='IPMI privilege')
+    ipmi_username = Field('', description='IPMI username')
+    ipmi_password = Field('', description='IPMI password')
+    templates = SetField(model='Template', allow_empty=True)
     groups = SetField(model=Group)
-    discovery_rules = SetField(model='DiscoveryRule')
+    interfaces = SetField(model=Interface)
+    applications = SetField(model=Application)
+    items = SetField(model=Item, allow_empty=True)
+    discovery_rules = SetField(model='DiscoveryRule', allow_empty=True)
+    description = Field()
+    graphs = SetField(model='Graph')
     macros = SetField(model='Macro', allow_empty=True)
-    proxy = Field(description='Proxy name')
-    ipmi_authtype = Field(description='IPMI authentication type')
-    ipmi_privilege = Field(description='IPMI privilege')
-    ipmi_username = Field(description='IPMI username')
-    ipmi_password = Field(description='IPMI password')
+    inventory = Field('')
 
     def __init__(self, name, **fields):
         self.name = name
+        self.host = fields.pop('host', self.name)
         self.update(fields)
+
+    def children(self):
+        for key, value in super(Host, self).children():
+            if key == 'applications':
+                # must append every descendant applications
+                value = self.extract(Application)
+            yield key, value
 
 
 class DiscoveryRule(Model):
@@ -786,6 +827,8 @@ class Document(Model):
 
     templates = SetField(model=Template)
     graphs = SetField(model=Graph)
+    hosts = SetField(model='Host')
+    screens = SetField(model='Screen')
 
     def __init__(self):
         self.date = datetime.datetime.now()
@@ -872,11 +915,16 @@ class ScreenItem(Model):
         (15, 'system status'),
         (16, 'status of host triggers')
     ))
-    resource = ReferenceField(model='Graph', append_host=False)
+    width = Field(320)
+    height = Field(320)
     x = Field() # virtual field, it will be overridden by parent!
     y = Field() # virtual field, it will be overridden by parent!
+    colspan = Field(1)
+    rowspan = Field(1)
+    resource = ReferenceField(model='Graph', append_host=True)
 
     def __init__(self, graph=None, **fields):
+        # alias graph to resource
         resource = fields.pop('resource', None)
         fields['resource'] = graph or resource
         self.update(fields)
