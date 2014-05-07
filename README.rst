@@ -4,7 +4,7 @@ ZBX
 
 .. image:: https://badge.fury.io/py/zbx.png
     :target: http://badge.fury.io/py/zbx
-    
+
 .. image:: https://travis-ci.org/johnnoone/zbx.png?branch=master
         :target: https://travis-ci.org/johnnoone/zbx
 
