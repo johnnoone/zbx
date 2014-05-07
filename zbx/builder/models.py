@@ -15,8 +15,29 @@ from zbx.exceptions import *
 from zbx.validators import *
 
 
+class FieldBase(type):
+    def increment(start=0, step=1):
+        i = start
+        while True:
+            yield i
+            i += step
+
+    _pos = increment()
+
+
+@add_metaclass(FieldBase)
 class Field(object):
     validators = []
+    _pos = None
+
+    def __new__(cls, *args, **kwargs):
+        try:
+            instance = object.__new__(cls, *args, **kwargs)
+        except TypeError as error:
+            raise Exception(cls.__name__, error.message)
+        instance._pos = FieldBase._pos.next()
+
+        return instance
 
     def __init__(self, default=None, choices=None, description=None, validators=None):
         if description:
@@ -272,6 +293,9 @@ class ModelBase(type):
             if hasattr(value, 'contribute_to_class'):
                 value.contribute_to_class(new_class, name)
 
+        # keep _field sorted by there _pos
+        new_class._fields = OrderedDict(sorted(new_class._fields.items(), key=lambda x: x[1]._pos))
+
         return new_class
 
 
@@ -366,6 +390,9 @@ class Valuemap(Model):
 class Item(Model):
     xml_tag = 'item'
 
+    name = Field(description='Item name')
+    key = Field(description='Item key')
+    description = Field(description='Item description')
     type = Field(2, choices=(
         (0, 'Zabbix agent'),
         (1, 'SNMPv1'),
@@ -386,11 +413,12 @@ class Item(Model):
         (16, 'JMX'),
         (17, 'SNMP trap'),
     ), description='Item type')
-    snmp_community = Field(description='SNMP Community name')
-    snmp_oid = Field(description='SNMP OID')
-    port = Field(description='Item custom port')
-    name = Field(description='Item name')
-    key = Field(description='Item key')
+    data_type = Field(0, choices=(
+        (0, 'decimal'),
+        (1, 'octal'),
+        (2, 'hexadecimal'),
+        (3, 'boolean'),
+    ), description='Data type of the item')
     delay = Field(60, description='Check interval')
     history = Field(7, description='How long to keep item history (days)')
     trends = Field(365, description='How long to keep item trends (days)')
@@ -406,7 +434,6 @@ class Item(Model):
         (3, 'numeric_unsigned'),
         (4, 'text')
     ), description='Value type')
-    trapper_hosts = Field(description='')
     units = Field('', description='Value units')
     multiplier = Field(0, description='Value multiplier')
     delta = Field(0, choices=(
@@ -414,20 +441,18 @@ class Item(Model):
         (1, 'delta_per_second'),
         (2, 'delta_simple')
     ), description='Store values as delta')
+    formula = Field(1, description='')
+    delay_flex = Field(description='Flexible delay')
+    trapper_hosts = Field(description='')
+    snmp_community = Field(description='SNMP Community name')
+    snmp_oid = Field(description='SNMP OID')
+    port = Field(description='Item custom port')
     snmpv3_securityname = Field(description='SNMPv3 security name')
     snmpv3_securitylevel = Field(description='SNMPv3 security level')
     snmpv3_authpassphrase = Field(description='SNMPv3 authentication phrase')
     snmpv3_privpassphrase = Field(description='SNMPv3 private phrase')
-    formula = Field(1, description='')
-    delay_flex = Field(description='Flexible delay')
     params = Field(description='')
     ipmi_sensor = Field(description='IPMI sensor')
-    data_type = Field(0, choices=(
-        (0, 'decimal'),
-        (1, 'octal'),
-        (2, 'hexadecimal'),
-        (3, 'boolean'),
-    ), description='Data type of the item')
     authtype = Field(0, choices=(
         (0, 'password'),
         (1, 'public key')
@@ -438,7 +463,6 @@ class Item(Model):
     publickey = Field(description='')
     privatekey = Field(description='')
     interface_ref = Field(description='Reference to host interface')
-    description = Field(description='Item description')
     inventory_link = Field(0,description='Host inventory field number, '
                                          'that will be updated with the '
                                          'value returned by the item')
@@ -477,10 +501,9 @@ class Item(Model):
 class Interface(Model):
     xml_tag = 'interface'
 
-    default = Field(0, choices=(
-        (0, 'Not default interface'),
-        (1, 'Default interface')
-    ), description='Interface status')
+    ip = Field(description='IP address, can be either IPv4 or IPv6')
+    dns = Field(description='DNS name')
+    port = Field(description='Port number')
     type = Field(1, choices=(
         (1, 'agent'),
         (2, 'SNMP'),
@@ -491,9 +514,10 @@ class Interface(Model):
         (0, 'connect to the host using DNS name'),
         (1, 'connect to the host using IP address')
     ), description='How to connect to the host')
-    ip = Field(description='IP address, can be either IPv4 or IPv6')
-    dns = Field(description='DNS name')
-    port = Field(description='Port number')
+    default = Field(0, choices=(
+        (0, 'Not default interface'),
+        (1, 'Default interface')
+    ), description='Interface status')
     interface_ref = Field(description='Interface reference name '
                                       'to be used in items.')
 
@@ -524,9 +548,9 @@ class Template(Model):
     groups = SetField(model=Group)
     applications = SetField(model=Application)
     items = SetField(model=Item)
-    screens = SetField(model='Screen')
     discovery_rules = SetField(model='DiscoveryRule')
     macros = SetField(model='Macro', allow_empty=True)
+    screens = SetField(model='Screen')
 
     def __init__(self, name, **fields):
         self.name = name
@@ -540,19 +564,19 @@ class Host(Model):
     host = Field(description='Host name')
     name = Field(description='Visible host name')
     description = Field()
+    interfaces = SetField(model=Interface)
     status = Field(description='Host Status')
+    applications = SetField(model=Application)
+    items = SetField(model=Item)
+    templates = SetField(model='Template')
+    groups = SetField(model=Group)
+    discovery_rules = SetField(model='DiscoveryRule')
+    macros = SetField(model='Macro', allow_empty=True)
     proxy = Field(description='Proxy name')
     ipmi_authtype = Field(description='IPMI authentication type')
     ipmi_privilege = Field(description='IPMI privilege')
     ipmi_username = Field(description='IPMI username')
     ipmi_password = Field(description='IPMI password')
-    applications = SetField(model=Application)
-    templates = SetField(model='Template')
-    groups = SetField(model=Group)
-    interfaces = SetField(model=Interface)
-    items = SetField(model=Item)
-    discovery_rules = SetField(model='DiscoveryRule')
-    macros = SetField(model='Macro', allow_empty=True)
 
     def __init__(self, name, **fields):
         self.name = name
@@ -585,10 +609,6 @@ class DiscoveryRule(Model):
         (16, 'JMX agent'),
     ), description='Host Status')
     proxy = Field(description='Proxy name')
-    ipmi_authtype = Field(description='IPMI authentication type')
-    ipmi_privilege = Field(description='IPMI privilege')
-    ipmi_username = Field(description='IPMI username')
-    ipmi_password = Field(description='IPMI password')
     applications = SetField(model=Application)
     templates = SetField(model=Template)
     groups = SetField(model=Group)
@@ -600,16 +620,17 @@ class DiscoveryRule(Model):
     item_prototypes = SetField(model='Item', xml_tag='item_prototype')
     trigger_prototypes = SetField(model='Trigger', xml_tag='trigger_prototype')
     graph_prototypes = SetField(model='Graph', xml_tag='graph_prototype')
-    authtype = Field(0, choices=(
-        (0, 'password'),
-        (1, 'public key')
-    ), description='SSH authentication method. '
-                   'Used only by SSH agent item prototypes')
 
+    allowed_hosts = Field()
+
+    ipmi_authtype = Field(description='IPMI authentication type')
+    ipmi_password = Field(description='IPMI password')
+    ipmi_privilege = Field(description='IPMI privilege')
+    ipmi_sensor = Field()
+    ipmi_username = Field(description='IPMI username')
 
     snmp_community = Field()
     snmp_oid = Field()
-    allowed_hosts = Field()
 
     snmpv3_contextname = Field()
     snmpv3_securityname = Field()
@@ -621,7 +642,11 @@ class DiscoveryRule(Model):
 
     params = Field()
 
-    ipmi_sensor = Field()
+    authtype = Field(0, choices=(
+        (0, 'password'),
+        (1, 'public key')
+    ), description='SSH authentication method. '
+                   'Used only by SSH agent item prototypes')
     username = Field()
     password = Field()
     publickey = Field()
