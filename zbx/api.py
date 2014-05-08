@@ -1,6 +1,10 @@
 """
     zbx.api
     ~~~~~~~
+
+    Access to zabbix api as described here:
+    https://www.zabbix.com/documentation/2.2/manual/api
+
 """
 
 __all__ = ['Api', 'RPCException', 'cast',

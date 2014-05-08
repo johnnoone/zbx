@@ -1,6 +1,6 @@
-===============================
+===
 ZBX
-===============================
+===
 
 .. image:: https://badge.fury.io/py/zbx.png
     :target: http://badge.fury.io/py/zbx
@@ -12,7 +12,7 @@ ZBX
         :target: https://pypi.python.org/pypi/zbx
 
 
-Generate Templates for Zabbix
+Zabbix utilitary tools
 
 * Free software: BSD license
 * Documentation: http://zbx.rtfd.org.
@@ -20,4 +20,19 @@ Generate Templates for Zabbix
 Features
 --------
 
-* TODO
+zbx.api
+~~~~~~~
+
+.. code-block:: console
+
+    from zb.api import *
+
+    configure(user=YOUR_USER, password=YOUR_PASSWORD, url=YOUR_URL)
+    reponse = request('history.get', {
+        'output': 'extend',
+        'history': 0,
+        'itemids': '23296',
+        'sortfield': 'clock',
+        'sortorder': 'DESC',
+        'limit': 10
+    })
