@@ -8,7 +8,7 @@ try:
 except ImportError:
     from StringIO import StringIO
 
-from .models import Document, Reference, Collection
+from zbx.config.models import Document, Reference, Collection
 
 
 def compile(obj, xml_tag=None):
@@ -47,7 +47,8 @@ def compile(obj, xml_tag=None):
         if root_graphs is None:
             root_graphs = ET.SubElement(root, 'graphs')
 
-        for xpath in ("./hosts/host/graphs/..", "./templates/template/graphs/.."):
+        for xpath in ("./hosts/host/graphs/..",
+                      "./templates/template/graphs/.."):
             for host in root.findall(xpath):
                 for graphs in host.findall("./graphs"):
                     host.remove(graphs)

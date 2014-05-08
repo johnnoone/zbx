@@ -3,5 +3,4 @@
     ~~~~~
 """
 
-from .models import *
-from .io import *
+from .io import *  # NOQA

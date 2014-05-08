@@ -1,175 +1,27 @@
+"""
+    zbx.config.models
+    ~~~~~~~~~~~~~~~~~
+
+"""
+
 __all__ = ['Application', 'DiscoveryRule', 'Document', 'Graph', 'GraphItem',
            'Group', 'Host', 'Interface', 'Item', 'Macro', 'Screen',
            'ScreenItem', 'Template', 'Trigger', 'Valuemap']
 
-from collections import OrderedDict, MutableSet
-from copy import copy
+from collections import MutableSet
 import logging
-import importlib
-import math
-from itertools import cycle
-from six import add_metaclass
 
-from zbx.exceptions import *
-from zbx.validators import *
-
-
-class FieldBase(type):
-    def increment(start=0, step=1):
-        i = start
-        while True:
-            yield i
-            i += step
-
-    _pos = increment()
-
-
-@add_metaclass(FieldBase)
-class Field(object):
-    validators = []
-    _pos = None
-
-    def __new__(cls, *args, **kwargs):
-        try:
-            instance = object.__new__(cls, *args, **kwargs)
-        except TypeError as error:
-            raise Exception(cls.__name__, error.message)
-        instance._pos = FieldBase._pos.next()
-
-        return instance
-
-    def __init__(self, default=None, choices=None, description=None, validators=None):
-        if description:
-            self.__doc__ = description
-        self.validators = list(self.__class__.validators) + list(validators or [])
-        if choices:
-            self.validators.append(ChoiceValidator(choices))
-        if default is not None:
-            self.default = self.validate(default)
-        else:
-            self.default = None
-
-    def __get__(self, obj, type=None):
-        return obj._values[self.key]
-
-    def __set__(self, obj, value):
-        obj._values[self.key] = self.validate(value)
-
-    def __delete__(self, obj):
-        del obj._values[self.key]
-
-    def validate(self, value):
-        for validator in self.validators:
-            value = validator(value)
-        return value
-
-    def contribute_to_class(self, cls, name):
-        self.key = name
-        cls._fields[name] = self
-
-    def get_default(self, parent):
-        return self.default
-
-
-class SetField(Field):
-    def __init__(self, model, xml_tag=None, allow_empty=False, **kwargs):
-        self.model = model
-        self.xml_tag = xml_tag
-        self.allow_empty = allow_empty
-        super(SetField, self).__init__(**kwargs)
-
-    def __set__(self, obj, value):
-        obj._values[self.key].clear()
-        obj._values[self.key].update(value or [])
-
-    def __delete__(self, obj):
-        obj._values[self.key].clear()
-
-    def get_default(self, parent):
-        logging.debug('sf: %s > %s', parent, self.model)
-        value = Collection(self.model, parent, self.default)
-        value.allow_empty = self.allow_empty
-        return value
-
-    def contribute_to_class(self, cls, name):
-        super(SetField, self).contribute_to_class(cls, name)
-
-
-class ReferenceField(Field):
-    def __init__(self, model, append_host=False, **kwargs):
-        self.model = model
-        self.append_host = append_host
-        super(ReferenceField, self).__init__(**kwargs)
-
-    def __set__(self, obj, value):
-        obj._values[self.key].update(value)
-
-    def __delete__(self, obj):
-        obj._values[self.key].clear()
-
-    def get_default(self, parent):
-        """Initialise a value will Model hydratation
-        """
-        return Reference(self.model, parent, self.default, self.append_host)
-
-
-class FixedSizeField(Field):
-    validators = []
-
-    def __init__(self, min, **kwargs):
-        validators = kwargs.pop('validators', []) or []
-        validators.append(MinIntValidator(min))
-        default = kwargs.pop('default', min)
-        kwargs['validators'] = validators
-        kwargs['default'] = default
-        super(FixedSizeField, self).__init__(**kwargs)
-
-    def contribute_to_class(self, cls, name):
-        super(FixedSizeField, self).contribute_to_class(cls, name)
-
-
-class ElasticField(Field):
-    def __init__(self, hsize_field, items_field, **kwargs):
-        self.hsize_field = hsize_field
-        self.items_field = items_field
-        super(ElasticField, self).__init__(**kwargs)
-
-    def __get__(self, obj, type=None):
-        value = obj._values[self.key]
-        if value <= 0:
-            # value must be guessed from hsize_field and items_field
-            a = len(getattr(obj, self.items_field))
-            b = getattr(obj, self.hsize_field) or 1
-            try:
-                value = int(math.ceil(float(a) / b))
-            except TypeError:
-                logging.error('failed with items:%s %s', a, b)
-        return max(1, value)
-
-    def __set__(self, obj, value):
-        obj._values[self.key] = self.validate(value)
-
-    def __delete__(self, obj):
-        del obj._values[self.key]
-
-    def contribute_to_class(self, cls, name):
-        super(ElasticField, self).contribute_to_class(cls, name)
-
-
-class ColorField(Field):
-    colors = cycle(['C80000', '009600', '000096', '960096', '009696', '969600', '969696', 'FF0000', '00FF00', '0000FF'])
-
-    def __get__(self, obj, type=None):
-        return obj._values[self.key] or self.colors.next()
+from zbx.exceptions import *  # NOQA
+from zbx.validators import *  # NOQA
+from .bases import *  # NOQA
+from .fields import *  # NOQA
 
 
 class Reference(object):
     def __init__(self, model, parent, default=None, append_host=False):
         self.append_host = append_host
         if isinstance(model, str):
-            mod, sep, cls = model.rpartition('.')
-            m = importlib.import_module(mod or __package__)
-            model = getattr(m, cls)
+            model = load(model, __package__)
         self.model = model
         self.parent = parent
         self.instance = None
@@ -196,13 +48,12 @@ class Reference(object):
             value.setdefault('host', self.parent.document_host().name)
         return value
 
+
 class Collection(MutableSet):
     def __init__(self, model, parent, instances=None):
         logging.debug('p: %s m: %s', parent.__class__, model.__class__)
         if isinstance(model, str):
-            mod, sep, cls = model.rpartition('.')
-            m = importlib.import_module(mod or __package__)
-            model = getattr(m, cls)
+            model = load(model, __package__)
         self.model = model
         self.parent = parent
         self.instances = []
@@ -276,112 +127,6 @@ class Collection(MutableSet):
         return '<Collection({}, {}, parent={})>'.format(
             id(self),
             self.model.__name__,
-            self.parent.__class__.__name__)
-
-
-class ModelBase(type):
-    def __new__(cls, name, bases, attrs):
-        attrs.setdefault(
-            '_fields', OrderedDict()
-        )
-        new_class = super(ModelBase, cls).__new__(cls, name, bases, attrs)
-
-        logging.debug('nc: %s', new_class)
-
-        for name, value in attrs.items():
-            if hasattr(value, 'contribute_to_class'):
-                value.contribute_to_class(new_class, name)
-
-        # keep _field sorted by there _pos
-        new_class._fields = OrderedDict(sorted(new_class._fields.items(), key=lambda x: x[1]._pos))
-
-        return new_class
-
-
-@add_metaclass(ModelBase)
-class Model(object):
-    """The mother of all models"""
-
-    def __new__(cls, *args, **kwargs):
-        try:
-            instance = object.__new__(cls, *args, **kwargs)
-        except TypeError as error:
-            raise Exception(cls.__name__, error.message)
-
-        logging.debug('__new__ %s', instance)
-
-        instance._values = OrderedDict()
-        instance.parent = None
-        for name, field in instance._fields.items():
-            instance._values[name] = field.get_default(instance)
-
-        return instance
-
-    def update(self, fields):
-        """hydrate model with these fields"""
-        logging.debug('update %s', self)
-        for key, value in fields.items():
-            try:
-                field = self._fields[key]
-            except KeyError:
-                raise ValueError('Field {} for {} is not defined'.format(
-                                 key, self.__class__.__name__))
-            if isinstance(field, SetField):
-                field.__get__(self).update(value or [])
-            else:
-                field.__set__(self, value)
-
-    def children(self):
-        fields = self._values.keys()
-        for key in fields:
-            value = getattr(self, key)
-            if value is not None:
-                yield key, value
-
-    def ancestors(self):
-        """Returns all ancestors"""
-        parent = self.parent
-        while parent:
-            yield parent
-            parent = parent.parent
-
-    def document_host(self):
-        """Returns the document host (used into references...)
-        """
-        for parent in self.ancestors():
-            if isinstance(parent.parent.parent, Document):
-                return parent
-
-    def reference(self):
-        raise NotImplementedError
-
-    def extract(self, model):
-        """Extract model from me and descendant
-        """
-        if not issubclass(model, Model):
-            raise ValueError('must be a Model type !')
-
-        groups = set()
-        for key, value in super(Host, self).children():
-            groups.update(self._extract(value, model))
-        return groups
-
-    def _extract(self, obj, model):
-        if isinstance(obj, model):
-            yield obj
-        if isinstance(obj, Model):
-            for key, value in obj.children():
-                for group in self._extract(value, model):
-                    yield group
-        if isinstance(obj, (Collection, set, list, tuple)):
-            for value in obj:
-                for group in self._extract(value, model):
-                    yield group
-
-    def __repr__(self):
-        return '<{}({}, parent={})>'.format(
-            self.__class__.__name__,
-            id(self),
             self.parent.__class__.__name__)
 
 
@@ -517,12 +262,13 @@ class Item(Model):
     publickey = Field(description='')
     privatekey = Field(description='')
     interface_ref = Field(description='Reference to host interface')
-    inventory_link = Field(0,description='Host inventory field number, '
-                                         'that will be updated with the '
-                                         'value returned by the item')
+    inventory_link = Field(0, description='Host inventory field number, '
+                                          'that will be updated with the '
+                                          'value returned by the item')
     applications = SetField(model=Application, description='Item applications')
     valuemap = SetField(model=Valuemap,
-                        description='Value map assigned to item', allow_empty=True)
+                        description='Value map assigned to item',
+                        allow_empty=True)
 
     def __init__(self, name, **fields):
         logging.debug('__init__ %s', self)
@@ -550,9 +296,6 @@ class Item(Model):
             return '{host}:{key}'.format(**reference)
         else:
             return '{}'.format(reference['key'])
-
-class AggregateItem(Item):
-    pass
 
 
 class Interface(Model):
@@ -614,7 +357,6 @@ class Template(Model):
         self.name = name
         fields.setdefault('template', name)
         self.update(fields)
-
 
     def children(self):
         for key, value in super(Template, self).children():
@@ -730,7 +472,6 @@ class DiscoveryRule(Model):
     port = Field()
     host_prototypes = SetField(model='Graph', xml_tag='host_prototype')
 
-
     def __init__(self, name, **fields):
         self.name = name
         self.update(fields)
@@ -838,7 +579,6 @@ class GraphItem(Model):
         (2, 'graph sum, used only by pie and exploded graphs')
     ))
 
-
     item = ReferenceField(model='Item')
 
     def __init__(self, item=None, **fields):
@@ -922,8 +662,8 @@ class ScreenItem(Model):
     ))
     width = Field(320)
     height = Field(320)
-    x = Field() # virtual field, it will be overridden by parent!
-    y = Field() # virtual field, it will be overridden by parent!
+    x = Field()  # virtual field, it will be overridden by parent!
+    y = Field()  # virtual field, it will be overridden by parent!
     colspan = Field(1)
     rowspan = Field(1)
     resource = ReferenceField(model='Graph', append_host=True)
