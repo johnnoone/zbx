@@ -551,6 +551,9 @@ class Item(Model):
         else:
             return '{}'.format(reference['key'])
 
+class AggregateItem(Item):
+    pass
+
 
 class Interface(Model):
     xml_tag = 'interface'
@@ -605,6 +608,7 @@ class Template(Model):
     discovery_rules = SetField(model='DiscoveryRule')
     macros = SetField(model='Macro', allow_empty=True)
     screens = SetField(model='Screen')
+    graphs = SetField(model='Graph')
 
     def __init__(self, name, **fields):
         self.name = name

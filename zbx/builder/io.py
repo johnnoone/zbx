@@ -47,10 +47,11 @@ def compile(obj, xml_tag=None):
         if root_graphs is None:
             root_graphs = ET.SubElement(root, 'graphs')
 
-        for host in root.findall("./hosts/host/graphs/.."):
-            for graphs in host.findall("./graphs"):
-                host.remove(graphs)
-                root_graphs.extend(graphs)
+        for xpath in ("./hosts/host/graphs/..", "./templates/template/graphs/.."):
+            for host in root.findall(xpath):
+                for graphs in host.findall("./graphs"):
+                    host.remove(graphs)
+                    root_graphs.extend(graphs)
 
         groupnames = set()
         for group in root.findall("*//groups/group/name"):
@@ -58,7 +59,7 @@ def compile(obj, xml_tag=None):
 
         root_groups = root.find("./groups")
         if root_groups is None:
-            root_groups = ET.SubElement(root, 'graphs')
+            root_groups = ET.SubElement(root, 'groups')
         else:
             root_groups.clear()
         for name in groupnames:
