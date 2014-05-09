@@ -78,10 +78,10 @@ class Model(object):
         """Returns the document host (used into references...)
         """
         # TODO fix this
-        Document = load('zbx.config.models.Document')
+        Config = load('zbx.config.models.Config')
 
         for parent in self.ancestors():
-            if isinstance(parent.parent.parent, Document):
+            if isinstance(parent.parent.parent, Config):
                 return parent
 
     def reference(self):

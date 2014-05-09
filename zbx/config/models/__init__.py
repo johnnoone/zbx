@@ -4,7 +4,7 @@
 
 """
 
-__all__ = ['Application', 'DiscoveryRule', 'Document', 'Graph', 'GraphItem',
+__all__ = ['Application', 'DiscoveryRule', 'Config', 'Graph', 'GraphItem',
            'Group', 'Host', 'Interface', 'Item', 'Macro', 'Screen',
            'ScreenItem', 'Template', 'Trigger', 'Valuemap']
 
@@ -587,7 +587,7 @@ class Macro(Model):
         self.update(fields)
 
 
-class Document(Model):
+class Config(Model):
     xml_tag = 'zabbix_export'
 
     templates = SetField(model=Template)

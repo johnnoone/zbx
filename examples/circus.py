@@ -67,7 +67,7 @@ def discovery(tpl):
 
 
 def generate():
-    doc = Document()
+    doc = Config()
 
     tpl = doc.templates.new('Template - Generic - Circus Process Manager',
         groups=['Templates - Services'], applications=['Circus server usage'])
@@ -173,7 +173,7 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description='zbx stuff for circus')
     parser.add_argument('--show-template', action='store_true', help='show generated template')
-    parser.add_argument('--import-template', action='store_true', help='import template parts')
+    parser.add_argument('--split-template', action='store_true', help='split configuration into small xml files')
     args = parser.parse_args()
 
     conf = generate()
@@ -181,7 +181,7 @@ if __name__ == '__main__':
     if args.show_template:
         print dumps(conf)
 
-    if args.import_template:
-        print "import the template"
-        for kind, fragment in divide_xml(conf):
+    if args.split_template:
+        for kind, fragment, name in divide_xml(conf):
+            print 'xml for:', kind, name
             print dumps(fragment)

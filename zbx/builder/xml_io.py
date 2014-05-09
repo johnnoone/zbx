@@ -9,14 +9,14 @@ try:
 except ImportError:
     from StringIO import StringIO
 
-from zbx.config.models import Document, Reference, Collection
+from zbx.config.models import Config, Reference, Collection
 
 
 def compile(obj, xml_tag=None):
     """Compile obj into an ElementTree.
     """
 
-    if isinstance(obj, Document):
+    if isinstance(obj, Config):
         root = new_root()
     else:
         root = ET.Element(xml_tag or obj.xml_tag)
@@ -39,7 +39,7 @@ def compile(obj, xml_tag=None):
             node = ET.SubElement(root, key)
             node.text = str(value)
 
-    if isinstance(obj, Document):
+    if isinstance(obj, Config):
         # let's do some fun
         # move every root/graphs to root
 
@@ -90,7 +90,7 @@ def dumps(obj):
     """Convert obj into an xml string.
     """
 
-    if isinstance(obj, Document):
+    if isinstance(obj, Config):
         root = compile(obj)
     else:
         root = obj
