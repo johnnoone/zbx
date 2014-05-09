@@ -170,5 +170,18 @@ def generate():
 
 
 if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser(description='zbx stuff for circus')
+    parser.add_argument('--show-template', action='store_true', help='show generated template')
+    parser.add_argument('--import-template', action='store_true', help='import template parts')
+    args = parser.parse_args()
+
     conf = generate()
-    print dumps(conf)
+
+    if args.show_template:
+        print dumps(conf)
+
+    if args.import_template:
+        print "import the template"
+        for kind, fragment in divide_xml(conf):
+            print dumps(fragment)

@@ -61,7 +61,8 @@ class Collection(MutableSet):
             self.update(instances)
 
     def __contains__(self, item):
-        """descriptionstring for fname"""
+        obj = self.validate(obj)
+        return obj in self.instances
 
     def __iter__(self):
         return iter(self.instances)

@@ -82,7 +82,7 @@ class Api(object):
             params = {'user': self.user, 'password': self.password}
             result = self._caller(method, params,  **api_args)
             self.auth_token = result
-        except:
+        except RPCException:
             pass
         return result
 
