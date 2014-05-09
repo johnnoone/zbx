@@ -1,5 +1,6 @@
 __all__ = ['compile', 'dumps']
 
+import sys
 import datetime
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
@@ -54,6 +55,9 @@ def compile(obj, xml_tag=None):
                     host.remove(graphs)
                     root_graphs.extend(graphs)
 
+
+        # copy every root/hosts/**/application to root/hosts
+
         groupnames = set()
         for group in root.findall("*//groups/group/name"):
             groupnames.add(group.text)
@@ -66,6 +70,23 @@ def compile(obj, xml_tag=None):
         for name in groupnames:
             group = ET.SubElement(root_groups, 'group')
             ET.SubElement(group, 'name').text = name
+
+        # applications
+        for xpath in ("./hosts/host",
+                      "./templates/template"):
+            applicationnames = set()
+            for host in root.findall(xpath):
+                for name in host.findall("*//applications/application/name"):
+                    applicationnames.add(name.text)
+
+                host_apps = host.find("./applications")
+                if host_apps is None:
+                    host_apps = ET.SubElement(host, 'applications')
+                else:
+                    host_apps.clear()
+                for name in applicationnames:
+                    group = ET.SubElement(host_apps, 'application')
+                    ET.SubElement(group, 'name').text = name
 
     return root
 

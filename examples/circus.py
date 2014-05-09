@@ -1,5 +1,6 @@
 import logging
 from zbx.builder import *
+from zbx.config import *
 
 
 def discovery(tpl):
@@ -133,25 +134,25 @@ def generate():
         'applications': ['Circus server usage']
     })
 
-    graph1 = doc.graphs.new('Circus - Number of processes')
+    graph1 = tpl.graphs.new('Circus - Number of processes')
     graph1.graph_items.new(item1)
 
-    graph2 = doc.graphs.new('Circus - Number of children')
+    graph2 = tpl.graphs.new('Circus - Number of children')
     graph2.graph_items.new(item2)
 
-    graph3 = doc.graphs.new('Circus - Memory usage')
+    graph3 = tpl.graphs.new('Circus - Memory usage')
     graph3.graph_items.new(item3)
 
-    graph4 = doc.graphs.new('Circus - RSS Memory')
+    graph4 = tpl.graphs.new('Circus - RSS Memory')
     graph4.graph_items.new(item4)
 
-    graph5 = doc.graphs.new('Circus - VMS Memory')
+    graph5 = tpl.graphs.new('Circus - VMS Memory')
     graph5.graph_items.new(item5)
 
-    graph6 = doc.graphs.new('Circus - CPU usage')
+    graph6 = tpl.graphs.new('Circus - CPU usage')
     graph6.graph_items.new(item6)
 
-    graph7 = doc.graphs.new('Circus - Nice')
+    graph7 = tpl.graphs.new('Circus - Nice')
     graph7.graph_items.new(item7)
 
     screen1 = tpl.screens.new('Generic Screen - Circus')
@@ -165,8 +166,9 @@ def generate():
 
     # discovery rules
     discovery(tpl)
+    return doc
 
-    return dumps(doc)
 
 if __name__ == '__main__':
-    print generate()
+    conf = generate()
+    print dumps(conf)

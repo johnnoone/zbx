@@ -358,10 +358,6 @@ class Template(Model):
         fields.setdefault('template', name)
         self.update(fields)
 
-    def children(self):
-        for key, value in super(Template, self).children():
-            yield key, value
-
 
 class Host(Model):
     xml_tag = 'host'
@@ -392,13 +388,6 @@ class Host(Model):
         self.name = name
         self.host = fields.pop('host', self.name)
         self.update(fields)
-
-    def children(self):
-        for key, value in super(Host, self).children():
-            if key == 'applications':
-                # must append every descendant applications
-                value = set(self.extract(Application))
-            yield key, value
 
 
 class DiscoveryRule(Model):
@@ -641,6 +630,7 @@ class Screen(Model):
 class ScreenItem(Model):
     xml_tag = 'screen_item'
 
+    # TODO make resourcetype dynamic
     resourcetype = Field(0, choices=(
         (0, 'graph'),
         (1, 'simple graph'),
