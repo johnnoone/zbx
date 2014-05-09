@@ -353,6 +353,7 @@ class Template(Model):
     macros = SetField(model='Macro', allow_empty=True)
     screens = SetField(model='Screen')
     graphs = SetField(model='Graph')
+    triggers = SetField(model='Trigger')
 
     def __init__(self, name, **fields):
         self.name = name
