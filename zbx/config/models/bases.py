@@ -4,9 +4,12 @@
 
 """
 
+__all__ = ['ModelBase', 'Model']
+
 from six import add_metaclass
 from collections import OrderedDict
 import logging
+
 from zbx.util import load
 
 

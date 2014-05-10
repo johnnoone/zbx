@@ -8,6 +8,7 @@ __all__ = ['Reference', 'Collection']
 from collections import MutableSet
 import logging
 
+from zbx.exceptions import ValidationError
 from zbx.util import load
 
 
@@ -54,7 +55,7 @@ class Collection(MutableSet):
         if instances:
             self.update(instances)
 
-    def __contains__(self, item):
+    def __contains__(self, obj):
         obj = self.validate(obj)
         return obj in self.instances
 

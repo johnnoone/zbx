@@ -3,7 +3,7 @@ import importlib
 
 
 def memoize(func):
-    """Memoize single argument functions"""
+    """Memoize arguments functions"""
 
     memoized = {}
 
