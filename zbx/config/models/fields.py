@@ -54,8 +54,12 @@ class Field(object):
         del obj._values[self.key]
 
     def validate(self, value):
-        for validator in self.validators:
-            value = validator(value)
+        try:
+            for validator in self.validators:
+                value = validator(value)
+        except ValidationError as error:
+            msg = '{} does not validate: {}'.format(self.key, error.message)
+            raise ValidationError(msg)
         return value
 
     def contribute_to_class(self, cls, name):

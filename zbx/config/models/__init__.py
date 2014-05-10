@@ -473,9 +473,22 @@ class Trigger(Model):
 
     name = Field()
     expression = Field()
-    status = Field()
-    priority = Field()
-    type = Field()
+    status = Field(0, choices=(
+        (0, 'enabled'),
+        (1, 'disabled')
+    ))
+    priority = Field(0, choices=(
+        (0, 'not classified'),
+        (1, 'information'),
+        (2, 'warning'),
+        (3, 'average'),
+        (4, 'high'),
+        (5, 'disaster')
+    ))
+    type = Field(0, choices=(
+        (0, 'do not generate multiple events'),
+        (1, 'generate multiple events'),
+    ))
 
     def __init__(self, name, **fields):
         self.name = name
@@ -526,6 +539,20 @@ class Graph(Model):
     def __init__(self, name, **fields):
         self.name = name
         self.update(fields)
+
+    def children(self):
+        graph_items = None
+        for key, value in super(Graph, self).children():
+            if key == 'graph_items':
+                graph_items = value
+            else:
+                yield key, value
+
+        # TODO move this logic somewhere else
+        for i, item in enumerate(graph_items):
+            item.sortorder = i
+
+        yield 'graph_items', graph_items
 
     def reference(self):
         response = {
@@ -602,7 +629,7 @@ class Screen(Model):
 
     name = Field()
     screen_items = SetField(model='ScreenItem')
-    hsize = FixedSizeField(min=3)
+    hsize = FixedSizeField(min=1)
     vsize = ElasticField(hsize_field='hsize', items_field='screen_items')
 
     def __init__(self, name, **fields):
@@ -659,6 +686,42 @@ class ScreenItem(Model):
     colspan = Field(1)
     rowspan = Field(1)
     resource = ReferenceField(model='Graph', append_host=True)
+    dynamic = Field(0, choices=(
+        (0, 'not dynamic'),
+        (1, 'dynamic')
+    ))
+    elements = Field(25)
+    halign = Field(0, choices=(
+        (0, 'center'),
+        (1, 'left'),
+        (1, 'right'),
+    ))
+    valign = Field(0, choices=(
+        (0, 'center'),
+        (1, 'top'),
+        (1, 'bottom'),
+    ))
+
+    sort_triggers = Field(0, choices=(
+        # Possible values for status of host group
+        # triggers and status of host triggers screen items
+        (0, '(default) last change, descending'),
+        (1, 'severity, descending'),
+        (2, 'host, ascending'),
+
+        # Possible values for history of actions screen elements
+        (3, 'time, ascending'),
+        (4, 'time, descending'),
+        (5, 'type, ascending'),
+        (6, 'type, descending'),
+        (7, 'status, ascending'),
+        (8, 'status, descending'),
+        (9, 'retries left, ascending'),
+        (10, 'retries left, descending'),
+        (11, 'recipient, ascending'),
+        (12, 'recipient, descending'),
+    ))
+    style = Field(0)
 
     def __init__(self, graph=None, **fields):
         # alias graph to resource

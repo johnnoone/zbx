@@ -28,5 +28,5 @@ class MinIntValidator(object):
 
     def __call__(self, value):
         if value < self.min:
-            raise ValidationError('value {} must be greater than'.format(value, self.min))
+            raise ValidationError('value {} must be greater than {}'.format(value, self.min))
         return value
