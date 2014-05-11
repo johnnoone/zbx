@@ -16,7 +16,7 @@ class Screen(Model):
 
     name = Field()
     screen_items = SetField(model='ScreenItem')
-    hsize = FixedSizeField(min=1)
+    hsize = FixedSizeField(default=3, min=1)
     vsize = ElasticField(hsize_field='hsize', items_field='screen_items')
 
     def __init__(self, name, **fields):

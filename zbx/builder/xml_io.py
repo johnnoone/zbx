@@ -1,6 +1,5 @@
 __all__ = ['compile', 'dumps', 'divide_xml']
 
-import sys
 import datetime
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
@@ -10,9 +9,10 @@ except ImportError:
     from StringIO import StringIO
 
 from zbx.config.models import Config, Reference, Collection
+from .defaults import rules
 
 
-def compile(obj, xml_tag=None):
+def _compile(obj, xml_tag=None):
     """Compile obj into an ElementTree.
     """
 
@@ -34,10 +34,18 @@ def compile(obj, xml_tag=None):
                 except KeyError:
                     sub_xml_tag = None
                 for element in value:
-                    node.append(compile(element, sub_xml_tag))
+                    node.append(_compile(element, sub_xml_tag))
         elif value is not None or getattr(value, 'allow_empty', False):
             node = ET.SubElement(root, key)
             node.text = str(value)
+
+    return root
+
+
+def compile(obj, xml_tag=None):
+    root = _compile(obj, xml_tag)
+
+    clean(root)
 
     if isinstance(obj, Config):
         # let's do some fun
@@ -53,7 +61,6 @@ def compile(obj, xml_tag=None):
                 for graphs in host.findall("./graphs"):
                     host.remove(graphs)
                     root_graphs.extend(graphs)
-
 
         # copy every root/hosts/**/application to root/hosts
 
@@ -84,6 +91,19 @@ def compile(obj, xml_tag=None):
                     ET.SubElement(group, 'name').text = name
 
     return root
+
+
+def clean(root):
+    """clear unrelevant nodes"""
+
+    document = ET.ElementTree(root)
+    for path, value in rules:
+        _, _, node = path.rpartition('/')
+        xpath = './/{}/..'.format(path)
+        for parent in document.findall(xpath):
+            for child in parent.findall(node):
+                if child.text == str(value):
+                    parent.remove(child)
 
 
 def dumps(obj):
@@ -209,7 +229,6 @@ def new_root():
     ET.SubElement(root, 'groups')
 
     return root
-
 
 
 def import_conf():

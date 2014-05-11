@@ -20,7 +20,7 @@ class Graph(Model):
     width = Field(900)
     height = Field(200)
     yaxismin = Field(0.0)
-    yaxismax = Field(0.0)
+    yaxismax = Field(100.0)
     show_work_period = Field(1, choices=(
         (0, 'hide'),
         (1, 'show')
@@ -94,7 +94,7 @@ class GraphItem(Model):
 
     sortorder = Field(0)
     color = ColorField()
-    yaxisside = Field(1, choices=(
+    yaxisside = Field(0, choices=(
         (0, 'left side'),
         (1, 'right side')
     ))
