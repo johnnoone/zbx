@@ -12,7 +12,8 @@ ZBX
         :target: https://pypi.python.org/pypi/zbx
 
 
-Zabbix utilitary tools
+This library let you to describe Zabbix configuration in pure Python.
+This configuration can then be dumped in xml and imported into zabbix.
 
 * Free software: BSD license
 * Documentation: http://zbx.rtfd.org.
@@ -36,3 +37,20 @@ zbx.api
         'sortorder': 'DESC',
         'limit': 10
     })
+
+
+zbx.config
+~~~~~~~~~~
+
+.. code-block:: console
+
+    from zb.api import *
+    from zb.config.items.aggregate import AvgItem
+
+    configuration = Config()
+    template = configuration.templates.new('My template')
+    classic_item = template.items.new('my item', key='my.item', applications=['my application'])
+    average_item = template.items.add(AvgItem('my item',
+                                              groups=['first group', 'second group'],
+                                              key='my.item',
+                                              applications=['my application']))

@@ -1,6 +1,7 @@
 """
-    zbx.config.models.screen
-    ~~~~~~~~~~~~~~~~~~~~~~~~
+
+    zbx.config.screen
+    ~~~~~~~~~~~~~~~~~
 
 """
 

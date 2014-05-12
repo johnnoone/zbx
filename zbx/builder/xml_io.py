@@ -8,7 +8,7 @@ try:
 except ImportError:
     from StringIO import StringIO
 
-from zbx.config.models import Config, Reference, Collection
+from zbx.config import Config, Reference, Collection
 from .defaults import rules
 
 

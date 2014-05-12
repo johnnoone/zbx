@@ -1,6 +1,6 @@
 """
 
-    zbx.config.models.hosts
+    zbx.config.hosts
     ~~~~~~~~~~~~~~~~~~~~~~~
 
 """

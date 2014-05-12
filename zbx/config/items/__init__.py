@@ -1,6 +1,7 @@
 """
-    zbx.config.models.item
-    ~~~~~~~~~~~~~~~~~~~~~~
+
+    zbx.config.item
+    ~~~~~~~~~~~~~~~
 
 """
 
@@ -8,8 +9,8 @@ __all__ = ['Item', 'ValueMap']
 
 import logging
 
-from ..bases import Model
-from ..fields import Field, SetField
+from zbx.config.bases import Model
+from zbx.config.fields import Field, SetField
 from zbx.util import load
 
 

@@ -1,6 +1,8 @@
 """
-    zbx.config.models.helpers
-    ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    zbx.config.helpers
+    ~~~~~~~~~~~~~~~~~~
+
 """
 
 __all__ = ['Reference', 'Collection']

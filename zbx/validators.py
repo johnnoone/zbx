@@ -22,11 +22,13 @@ class ChoiceValidator(object):
         else:
             raise ValidationError('value {} is not allowed'.format(value))
 
+
 class MinIntValidator(object):
     def __init__(self, min):
         self.min = min
 
     def __call__(self, value):
         if value < self.min:
-            raise ValidationError('value {} must be greater than {}'.format(value, self.min))
+            msg = 'value {} must be greater than {}'.format(value, self.min)
+            raise ValidationError(msg)
         return value

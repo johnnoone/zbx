@@ -1,6 +1,6 @@
 """
 
-    zbx.config.models.discovery
+    zbx.config.discovery
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 """

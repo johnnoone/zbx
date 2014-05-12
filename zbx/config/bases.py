@@ -1,6 +1,7 @@
 """
-    zbx.config.models.bases
-    ~~~~~~~~~~~~~~~~~~~~~~~
+
+    zbx.config.bases
+    ~~~~~~~~~~~~~~~~
 
 """
 
@@ -86,7 +87,7 @@ class Model(object):
         """Returns the document host (used into references...)
         """
         # TODO fix this
-        Config = load('zbx.config.models.Config')
+        Config = load('zbx.config.Config')
 
         for parent in self.ancestors():
             if isinstance(parent.parent.parent, Config):
@@ -102,7 +103,7 @@ class Model(object):
             raise ValueError('must be a Model type !')
 
         # TODO fix this
-        Host = load('zbx.config.models.Host')
+        Host = load('zbx.config.Host')
 
         groups = set()
         for key, value in super(Host, self).children():
@@ -112,7 +113,7 @@ class Model(object):
     def _extract(self, obj, model):
 
         # TODO fix this
-        Collection = load('zbx.config.models.Collection')
+        Collection = load('zbx.config.Collection')
 
         if isinstance(obj, model):
             yield obj

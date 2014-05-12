@@ -1,6 +1,8 @@
 """
-    zbx.config.models.tagging
-    ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    zbx.config.tagging
+    ~~~~~~~~~~~~~~~~~~
+
 """
 
 __all__ = ['Application', 'Group']

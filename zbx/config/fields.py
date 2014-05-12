@@ -1,6 +1,6 @@
 """
 
-    zbx.config.models.fields
+    zbx.config.fields
     ~~~~~~~~~~~~~~~~~~~~~~~~
 
 """
@@ -101,7 +101,7 @@ class SetField(Field):
         logging.debug('sf: %s > %s', parent, self.model)
 
         # TODO fix this
-        Collection = load('zbx.config.models.Collection')
+        Collection = load('zbx.config.Collection')
 
         value = Collection(self.model, parent, self.default)
         value.allow_empty = self.allow_empty
@@ -128,7 +128,7 @@ class ReferenceField(Field):
         """
 
         # TODO fix this
-        Reference = load('zbx.config.models.Reference')
+        Reference = load('zbx.config.Reference')
 
         return Reference(self.model, parent, self.default, self.append_host)
 
