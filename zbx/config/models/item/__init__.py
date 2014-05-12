@@ -8,8 +8,8 @@ __all__ = ['Item', 'ValueMap']
 
 import logging
 
-from .bases import Model
-from .fields import Field, SetField
+from ..bases import Model
+from ..fields import Field, SetField
 from zbx.util import load
 
 
@@ -111,8 +111,8 @@ class Item(Model):
             'key': self.key,
         }
 
-        Host = load('Host', __package__)
-        Template = load('Template', __package__)
+        Host = load('Host', __package__.rpartition('.')[0])
+        Template = load('Template', __package__.rpartition('.')[0])
         chaining = [self]
         for parent in self.ancestors():
             chaining.append(parent)

@@ -69,7 +69,7 @@ class Model(object):
             field.set_default(self, value)
 
     def children(self):
-        fields = self._values.keys()
+        fields = self._fields.keys()
         for key in fields:
             value = getattr(self, key)
             if value is not None:
