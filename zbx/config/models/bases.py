@@ -22,6 +22,11 @@ class ModelBase(type):
 
         logging.debug('nc: %s', new_class)
 
+        for base in bases:
+            if hasattr(base, '_fields'):
+                new_class._fields.update(base._fields)
+            # print name, attrs, bases
+
         for name, value in attrs.items():
             if hasattr(value, 'contribute_to_class'):
                 value.contribute_to_class(new_class, name)
