@@ -5,7 +5,5 @@ Accessing the API
 =================
 
 
-
-
 .. automodule:: zbx.api
    :members:
