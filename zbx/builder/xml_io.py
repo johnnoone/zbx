@@ -4,9 +4,9 @@ import datetime
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 try:
-    from cStringIO import StringIO
+    from six import cStringIO as StringIO
 except ImportError:
-    from StringIO import StringIO
+    from six import StringIO
 
 from zbx.config import Config, Reference, Collection
 from .defaults import rules
