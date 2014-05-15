@@ -68,7 +68,7 @@ class ScreenItem(Model):
         (16, 'status of host triggers')
     ))
     width = Field(320)
-    height = Field(320)
+    height = Field(200)
     x = Field()  # virtual field, it will be overridden by parent!
     y = Field()  # virtual field, it will be overridden by parent!
     colspan = Field(1)

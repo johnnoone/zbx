@@ -35,6 +35,7 @@ class Trigger(Model):
     xml_tag = 'trigger'
 
     name = Field()
+    description = Field()
     expression = Field()
     status = Field(0, choices=(
         (0, 'enabled'),

@@ -17,8 +17,6 @@ from ..fields import Field
 
 class AggregateKeyField(Field):
     def __get__(self, obj, type=None):
-        tpl = '{groupfunc}[{groups}, {key}, {itemfunc}, {timeperiod}]'
-
         groups = obj.groups or ['<not set>']
         if len(groups) > 1:
             groups = '[{}]'.format(','.join(repr(group) for group in groups))
@@ -27,6 +25,7 @@ class AggregateKeyField(Field):
                 groups = repr(e)
                 break
 
+        tpl = '{groupfunc}[{groups},"{key}",{itemfunc},{timeperiod}]'
         timeperiod = obj.timeperiod or 0
         groupfunc = obj.groupfunc
         itemfunc = obj.itemfunc
@@ -37,11 +36,6 @@ class AggregateKeyField(Field):
                           key=key,
                           itemfunc=itemfunc,
                           timeperiod=timeperiod)
-
-    def contribute_to_class(self, cls, name):
-        # TODO declare virtual keys
-        super(AggregateKeyField, self).contribute_to_class(cls, name)
-        # setattr(cls, 'set_')
 
 
 class AggregateItem(Item):
@@ -59,6 +53,9 @@ class AggregateItem(Item):
             self.groups.update(groups)
         else:
             self.groups.add(groups)
+
+        fields.setdefault('type', 8)
+        fields.setdefault('data_type', 'decimal')
 
         super(AggregateItem, self).__init__(name, **fields)
 
