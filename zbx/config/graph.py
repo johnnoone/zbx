@@ -15,6 +15,10 @@ from zbx.util import load
 
 
 class Graph(Model):
+    """
+    Graph model
+    """
+
     xml_tag = 'graph'
 
     name = Field()
@@ -91,6 +95,10 @@ class Graph(Model):
 
 
 class GraphItem(Model):
+    """
+    GraphItem model
+    """
+
     xml_tag = 'graph_item'
 
     sortorder = Field(0)

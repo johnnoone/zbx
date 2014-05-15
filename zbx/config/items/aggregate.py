@@ -41,6 +41,10 @@ class AggregateKeyField(Field):
 
 
 class AggregateItem(Item):
+    """
+    AggregateItem model
+    """
+
     key = AggregateKeyField()
 
     def __init__(self, name, groups, groupfunc, itemfunc, timeperiod, **fields):  # NOQA
@@ -64,7 +68,7 @@ class AggregateItem(Item):
 
 def AvgItem(name, groups, **fields):
     """
-    helper for average items.
+    Helper for average items.
     """
     if not name.endswith(' (avg)'):
         name += ' (avg)'
@@ -78,7 +82,7 @@ def AvgItem(name, groups, **fields):
 
 def SumItem(name, groups, **fields):
     """
-    helper for sum items.
+    Helper for sum items.
     """
     if not name.endswith(' (sum)'):
         name += ' (sum)'

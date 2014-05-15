@@ -15,6 +15,10 @@ from zbx.util import load
 
 
 class ModelBase(type):
+    """
+    ModelBase
+    """
+
     def __new__(cls, name, bases, attrs):
         attrs.setdefault(
             '_fields', OrderedDict()
@@ -41,7 +45,9 @@ class ModelBase(type):
 
 @add_metaclass(ModelBase)
 class Model(object):
-    """The mother of all models"""
+    """
+    The mother of all models.
+    """
 
     def __new__(cls, *args, **kwargs):
         try:

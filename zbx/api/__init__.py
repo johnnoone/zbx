@@ -32,7 +32,7 @@ from zbx.exceptions import RPCException
 logger = logging.getLogger(__name__)
 
 
-# list of methods which does not require authentication
+#: list of methods which does not require authentication
 WITHOUT_AUTH = set([
     'user.login',
     'user.checkAuthentication',
@@ -41,7 +41,8 @@ WITHOUT_AUTH = set([
 
 
 def cast(data):
-    """ensure int are int..."""
+    """Ensure that int are int etc..."""
+
     if isinstance(data, dict):
         return data.__class__((key, cast(value)) for key, value in data.items())  # NOQA
     if isinstance(data, (list, set, tuple)):
@@ -55,21 +56,31 @@ def cast(data):
 
 
 class Api(object):
-    def __init__(self, user, password, url):
+    """
+    Main api object
+    """
+
+    def __init__(self, user, password, url, auth_token=None):
         self.user = user
         self.password = password
         self.url = url
         self.auth_token = None
 
-    def request(self, method, params=None, auth_token=None, **api_args):
+    def request(self, method, params=None, auth_token=None):
+        """
+        Handle a request to the api.
+
+        It will authenticate automatically if auth_token was not provided
+        """
+
         params = params or []
 
         if not method in WITHOUT_AUTH:
-            auth_token = auth_token or self.authenticate(**api_args)
+            auth_token = auth_token or self.authenticate()
 
         return cast(self._caller(method, params, auth_token, **api_args))
 
-    def authenticate(self, reset=False, **api_args):
+    def authenticate(self, reset=False):
         """
         Authenticates to the api.
 
@@ -80,13 +91,13 @@ class Api(object):
         try:
             method = 'user.login'
             params = {'user': self.user, 'password': self.password}
-            result = self._caller(method, params,  **api_args)
+            result = self._caller(method, params)
             self.auth_token = result
         except RPCException:
             pass
         return result
 
-    def _caller(self, method, params, auth_token=None, **api_args):
+    def _caller(self, method, params, auth_token=None):
         data = {
             'jsonrpc': '2.0',
             'id': 1,
@@ -127,12 +138,18 @@ class Api(object):
 
 _instance = Api(None, None, None)
 
+#: authenticate with the global api instance
 authenticate = _instance.authenticate
 
+#: request with the global api instance
 request = _instance.request
 
 
 def configure(**attrs):
+    """
+    Configure the global api instance.
+
+    """
     for attr, value in attrs.items():
         if attr in ('url', 'user', 'password', 'auth_token'):
             setattr(_instance, attr, value)

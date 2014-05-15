@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Welcome to ZBX's documentation!
-======================================
+===============================
 
 Contents:
 
@@ -14,6 +14,8 @@ Contents:
    readme
    installation
    usage
+   api
+   config
    contributing
    authors
    history

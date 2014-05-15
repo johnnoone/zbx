@@ -10,6 +10,10 @@ from .fields import Field, SetField
 
 
 class DiscoveryRule(Model):
+    """
+    DiscoveryRule model
+    """
+
     xml_tag = 'discovery_rule'
 
     key = Field()

@@ -30,6 +30,10 @@ class FieldBase(type):
 
 @add_metaclass(FieldBase)
 class Field(object):
+    """
+    The base field.
+    """
+
     validators = []
     _pos = None
     virtual = False
@@ -51,6 +55,9 @@ class Field(object):
         """
         if description:
             self.__doc__ = description
+        else:
+            self.__doc__ = '{} field'.format(self.__class__.__name__.lower())
+
         self.validators = list(self.__class__.validators)
         self.validators += list(validators or [])
         if choices:
@@ -93,6 +100,10 @@ class Field(object):
 
 
 class SetField(Field):
+    """
+    The set field.
+    """
+
     def __init__(self, model, xml_tag=None, allow_empty=False, **kwargs):
         self.model = model
         self.xml_tag = xml_tag
@@ -121,6 +132,10 @@ class SetField(Field):
 
 
 class ReferenceField(Field):
+    """
+    The reference field.
+    """
+
     def __init__(self, model, append_host=False, **kwargs):
         self.model = model
         self.append_host = append_host

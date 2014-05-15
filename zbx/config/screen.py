@@ -13,6 +13,10 @@ from .fields import Field, SetField, ReferenceField
 
 
 class Screen(Model):
+    """
+    Screen model
+    """
+
     xml_tag = 'screen'
 
     name = Field()
@@ -45,6 +49,10 @@ class Screen(Model):
 
 
 class ScreenItem(Model):
+    """
+    ScreenItem model
+    """
+
     xml_tag = 'screen_item'
 
     # TODO make resourcetype dynamic

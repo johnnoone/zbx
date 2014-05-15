@@ -23,6 +23,10 @@ from zbx.validators import *  # NOQA
 
 
 class Config(Model):
+    """
+    Main config model
+    """
+
     xml_tag = 'zabbix_export'
 
     templates = SetField(model='Template')
@@ -32,6 +36,10 @@ class Config(Model):
 
 
 class Trigger(Model):
+    """
+    Trigger model
+    """
+
     xml_tag = 'trigger'
 
     name = Field()
@@ -60,6 +68,10 @@ class Trigger(Model):
 
 
 class Macro(Model):
+    """
+    Macro model
+    """
+
     xml_tag = 'macro'
 
     macro = Field()

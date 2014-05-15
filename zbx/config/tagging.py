@@ -12,6 +12,10 @@ from .fields import Field
 
 
 class Application(Model):
+    """
+    Application model
+    """
+
     xml_tag = 'application'
 
     name = Field()
@@ -38,6 +42,10 @@ class Application(Model):
 
 
 class Group(Model):
+    """
+    Group model
+    """
+
     xml_tag = 'group'
 
     name = Field()

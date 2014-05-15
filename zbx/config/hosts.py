@@ -12,6 +12,10 @@ from .fields import Field, SetField
 
 
 class Template(Model):
+    """
+    Template model
+    """
+
     xml_tag = 'template'
 
     name = Field()
@@ -32,6 +36,10 @@ class Template(Model):
 
 
 class Host(Model):
+    """
+    Host model
+    """
+
     xml_tag = 'host'
 
     host = Field(description='Host name')
@@ -63,6 +71,10 @@ class Host(Model):
 
 
 class Interface(Model):
+    """
+    Interface model
+    """
+
     xml_tag = 'interface'
 
     ip = Field(description='IP address, can be either IPv4 or IPv6')

@@ -1,6 +1,6 @@
-========
-Usage
-========
+============
+Simple Usage
+============
 
 To use ZBX in a project::
 

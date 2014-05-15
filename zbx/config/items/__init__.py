@@ -15,10 +15,18 @@ from zbx.util import load
 
 
 class ValueMap(Model):
+    """
+    ValueMap model
+    """
+
     xml_tag = 'valuemap'
 
 
 class Item(Model):
+    """
+    Item model
+    """
+
     xml_tag = 'item'
 
     name = Field(description='Item name')
