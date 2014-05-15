@@ -14,18 +14,17 @@ import json
 import logging
 
 from six import PY3
+from six.moves.urllib.request import urlopen, Request
 
 if PY3:
-    import urllib
-    _request_context = urllib.urlopen
+    _request_context = urlopen
 else:
     import contextlib
     import functools
-    import urllib2 as urllib
 
-    @functools.wraps(urllib.urlopen)
+    @functools.wraps(urlopen)
     def _request_context(request):
-        return contextlib.closing(urllib.urlopen(request))
+        return contextlib.closing(urlopen(request))
 
 from zbx.exceptions import RPCException
 
@@ -109,7 +108,7 @@ class Api(object):
 
         query = json.dumps(data)
 
-        request = urllib.Request(self.url, query, {
+        request = Request(self.url, query, {
             'Content-Type': 'application/json'
         })
 
