@@ -37,7 +37,7 @@ class Field(object):
         try:
             instance = object.__new__(cls, *args, **kwargs)
         except TypeError as error:
-            raise Exception(cls.__name__, error.message)
+            raise Exception(cls.__name__, str(error))
         instance._pos = next(FieldBase._pos)
         instance.virtual = False
 
@@ -79,7 +79,7 @@ class Field(object):
             for validator in self.validators:
                 value = validator(value)
         except ValidationError as error:
-            msg = '{} does not validate: {}'.format(self.key, error.message)
+            msg = '{} does not validate: {}'.format(self.key, error)
             raise ValidationError(msg)
         return value
 

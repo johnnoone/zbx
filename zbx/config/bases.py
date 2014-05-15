@@ -53,7 +53,7 @@ class Model(object):
         try:
             instance = object.__new__(cls, *args, **kwargs)
         except TypeError as error:
-            raise Exception(cls.__name__, error.message)
+            raise Exception(cls.__name__, str(error))
 
         logging.debug('__new__ %s', instance)
 

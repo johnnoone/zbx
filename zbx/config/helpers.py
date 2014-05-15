@@ -117,7 +117,7 @@ class Collection(MutableSet):
             raise
         except Exception as error:
             logging.exception(error)
-            raise ValidationError(error.message)
+            raise ValidationError(str(error))
 
         return obj
 
