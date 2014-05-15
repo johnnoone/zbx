@@ -15,4 +15,4 @@ install:
   - pip install -r test-requirements.txt
 
 # command to run tests, e.g. python setup.py test
-script: python setup.py nosetests
+script: nosetests
