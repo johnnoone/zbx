@@ -38,7 +38,7 @@ class Field(object):
             instance = object.__new__(cls, *args, **kwargs)
         except TypeError as error:
             raise Exception(cls.__name__, error.message)
-        instance._pos = FieldBase._pos.next()
+        instance._pos = next(FieldBase._pos)
         instance.virtual = False
 
         return instance
