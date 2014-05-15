@@ -35,7 +35,7 @@ class Field(object):
 
     def __new__(cls, *args, **kwargs):
         try:
-            instance = object.__new__(cls, *args, **kwargs)
+            instance = object.__new__(cls)
         except TypeError as error:
             raise Exception(cls.__name__, str(error))
         instance._pos = next(FieldBase._pos)
