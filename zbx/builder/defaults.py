@@ -34,7 +34,6 @@ class RuleSet(object):
                     endpath, value = rule
                     yield self.format_path(endpath), value
             except Exception:
-                print rule
                 raise
 
     def format_path(self, path):
