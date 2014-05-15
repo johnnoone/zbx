@@ -8,6 +8,7 @@
 __all__ = ['ColorField', 'ElasticField', 'Field',
            'FieldBase', 'FixedSizeField', 'ReferenceField', 'SetField']
 
+from itertools import count
 from itertools import cycle
 import math
 from six import add_metaclass
@@ -19,13 +20,7 @@ from zbx.util import load
 
 
 class FieldBase(type):
-    def increment(start=0, step=1):
-        i = start
-        while True:
-            yield i
-            i += step
-
-    _pos = increment()
+    _pos = count()
 
 
 @add_metaclass(FieldBase)
