@@ -32,6 +32,7 @@ class FieldBase(type):
 class Field(object):
     validators = []
     _pos = None
+    virtual = False
 
     def __new__(cls, *args, **kwargs):
         try:
@@ -39,10 +40,15 @@ class Field(object):
         except TypeError as error:
             raise Exception(cls.__name__, error.message)
         instance._pos = FieldBase._pos.next()
+        instance.virtual = False
 
         return instance
 
-    def __init__(self, default=None, choices=None, description=None, validators=None):  # NOQA
+    def __init__(self, default=None, choices=None, description=None, validators=None, virtual=None):  # NOQA
+        """
+        Parameters:
+        virtual -- not exposed as child
+        """
         if description:
             self.__doc__ = description
         self.validators = list(self.__class__.validators)
@@ -53,6 +59,9 @@ class Field(object):
             self.default = self.validate(default)
         else:
             self.default = None
+
+        if virtual is not None:
+            self.virtual = virtual
 
     def __get__(self, obj, type=None):
         return obj._values[self.key]

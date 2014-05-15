@@ -60,25 +60,28 @@ class AggregateItem(Item):
         super(AggregateItem, self).__init__(name, **fields)
 
 
-class AvgItem(AggregateItem):
-    def __init__(self, name, groups, **fields):
-        if not name.endswith(' (avg)'):
-            name += ' (avg)'
+def AvgItem(name, groups, **fields):
+    """
+    helper for average items.
+    """
+    if not name.endswith(' (avg)'):
+        name += ' (avg)'
 
-        fields.setdefault('groupfunc', 'grpavg')
-        fields.setdefault('itemfunc', 'avg')
-        fields.setdefault('timeperiod', '1m')
+    fields.setdefault('groupfunc', 'grpavg')
+    fields.setdefault('itemfunc', 'avg')
+    fields.setdefault('timeperiod', '1m')
 
-        super(AvgItem, self).__init__(name, groups, **fields)
+    return AggregateItem(name, groups, **fields)
 
 
-class SumItem(AggregateItem):
-    def __init__(self, name, groups, **fields):
-        if not name.endswith(' (sum)'):
-            name += ' (sum)'
+def SumItem(name, groups, **fields):
+    """
+    helper for sum items.
+    """
+    if not name.endswith(' (sum)'):
+        name += ' (sum)'
 
-        fields.setdefault('groupfunc', 'grpavg')
-        fields.setdefault('itemfunc', 'avg')
-        fields.setdefault('timeperiod', '1m')
-
-        super(AvgItem, self).__init__(name, groups, **fields)
+    fields.setdefault('groupfunc', 'grpavg')
+    fields.setdefault('itemfunc', 'avg')
+    fields.setdefault('timeperiod', '1m')
+    return AggregateItem(name, groups, **fields)

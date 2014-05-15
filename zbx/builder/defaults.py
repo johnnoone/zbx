@@ -95,7 +95,7 @@ rules += scope('item', [
 ])
 
 rules += scope('screen', [
-    ('hsize', 1),
+    # ('hsize', 1),
     ('vsize', 1)
 ])
 

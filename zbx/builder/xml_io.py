@@ -10,7 +10,7 @@ except ImportError:
 
 from zbx.config import Config, Reference, Collection
 from .defaults import rules
-
+from copy import deepcopy
 
 def _compile(obj, xml_tag=None):
     """Compile obj into an ElementTree.
@@ -61,6 +61,17 @@ def compile(obj, xml_tag=None):
                 for graphs in host.findall("./graphs"):
                     host.remove(graphs)
                     root_graphs.extend(graphs)
+
+        root_triggers = root.find("./triggers")
+        if root_triggers is None:
+            root_triggers = ET.SubElement(root, 'triggers')
+
+        for xpath in ("./hosts/host/triggers/..",
+                      "./templates/template/triggers/.."):
+            for host in root.findall(xpath):
+                for triggers in host.findall("./triggers"):
+                    host.remove(triggers)
+                    root_triggers.extend(triggers)
 
         # copy every root/hosts/**/application to root/hosts
 
@@ -124,7 +135,7 @@ def dumps(obj):
     return minidom.parseString(contents).toprettyxml(indent="  ")
 
 
-def divide_xml(conf):
+def divide_xml(conf, faster=True):
     """divide xml  into smaller nodes"""
     root = compile(conf)
 
@@ -144,82 +155,146 @@ def divide_xml(conf):
 
         return minidom.parseString(contents).toprettyxml(indent="  ")
 
-    postponed_screens = set()
-
     # import hosts, then templates, then graphs ... then screens
-    for host in root.findall("./hosts/host"):
-        host = host.copy()
+    for src in root.findall("./hosts/host"):
+        host = deepcopy(src)
+
         container = new_container()
         hosts = ET.SubElement(container, 'hosts')
         hosts.append(host)
 
-        for node in host.findall("./screens/screen/.."):
-            # post pone screen
-            host.remove(node)
-            postponed_screens.add(('./hosts/host', './screens/screen/..'))
+        for child in host:
+            if child.tag in ('screens', 'items'):
+                host.remove(child)
 
         yield 'hosts/host', container, host.find('name').text
 
-    for host in root.findall("./templates/template"):
-        host = host.copy()
+
+    for src in root.findall("./hosts/host/items/item/../.."):
+        src = deepcopy(src)
+
+        container = new_container()
+        hosts = ET.SubElement(container, 'hosts')
+        host = ET.SubElement(hosts, 'host')
+
+        for child in src:
+            if child.tag in ('name', 'host', 'items'):
+                host.append(child)
+
+
+        if faster:
+            yield 'hosts/host/items', container, host.find('name').text
+        else:
+            for items in host.findall("./items/item/.."):
+                cp = items[:]
+                for item in cp:
+                    items.clear()
+                    items.append(item)
+
+                    yield 'hosts/host/items/item', container, item.find('name').text
+
+    for src in root.findall("./templates/template"):
+        host = deepcopy(src)
+
         container = new_container()
         hosts = ET.SubElement(container, 'templates')
         hosts.append(host)
 
-        for node in host.findall("./screens/screen/.."):
-            # post pone screen
-            host.remove(node)
-            postponed_screens.add(('./templates/template', './screens/screen/..'))
+        for child in host:
+            if child.tag in ('screens',):
+                host.remove(child)
 
         yield 'templates/template', container, host.find('name').text
 
-    for graph in root.findall("./graphs/graph"):
-        graph = graph.copy()
-        container = new_container()
-        graphs = ET.SubElement(container, 'graphs')
-        graphs.append(graph)
-        yield 'graphs/graph', container, graph.find('name').text
+
+#     for src in root.findall("./templates/template/items/item/../.."):
+#         src = deepcopy(src)
+# 
+#         container = new_container()
+#         hosts = ET.SubElement(container, 'templates')
+#         host = ET.SubElement(hosts, 'template')
+# 
+#         for child in src:
+#             if child.tag in ('name', 'template', 'items'):
+#                 host.append(child)
+# 
+#         if faster:
+#             yield 'templates/template/items', container, host.find('name').text
+#         else:
+#             for items in host.findall("./items/item/.."):
+#                 cp = items[:]
+#                 for item in cp:
+#                     items.clear()
+#                     items.append(item)
+# 
+#                     yield 'templates/template/items/item', container, item.find('name').text
+
+
+    if faster and False:
+        for graphs in root.findall("./graphs/graph/.."):
+            graphs = graphs.copy()
+            container = new_container()
+            container.append(graphs)
+            count = len(graphs.findall('graph'))
+            yield 'graphs/graph', container, "{} graphs".format(count)
+    else:
+        for graph in root.findall("./graphs/graph"):
+            graph = graph.copy()
+            container = new_container()
+            graphs = ET.SubElement(container, 'graphs')
+            graphs.append(graph)
+            yield 'graphs/graph', container, graph.find('name').text
 
     for screen in root.findall("./screens/screen"):
-        screen = screen.copy()
+        screen = deepcopy(screen)
+
         container = new_container()
         hosts = ET.SubElement(container, 'screens')
         hosts.append(screen)
         yield 'screens/screen', container, screen.find('name').text
 
-    for host in root.findall("./hosts/host/screens/screen/../.."):
-        host = host.copy()
+    for src in root.findall("./hosts/host/screens/screen/../.."):
+        src = deepcopy(src)
 
         container = new_container()
         hosts = ET.SubElement(container, 'hosts')
-        hosts.append(host)
-        for child in host:
-            if child.tag not in ('screens', 'name', 'host'):
-                host.remove(child)
+        host = ET.SubElement(hosts, 'host')
 
-        for screens in host.findall("./screens/screen/.."):
-            for screen in screens:
-                screens.clear()
-                screens.append(screen)
+        for child in src:
+            if child.tag in ('name', 'host'):
+                ET.SubElement(host, child.tag).text = child.text
+        screens = ET.SubElement(host, 'screens')
 
-                yield 'templates/template/screens/screen', container, screen.find('name').text
+        for screen in src.findall("./screens/screen"):
+            screens.clear()
+            screens.append(screen)
 
-    for host in root.findall("./templates/template/screens/screen/../.."):
-        host = host.copy()
+            yield 'hosts/host/screens/screen', container, screen.find('name').text
+
+    for src in root.findall("./templates/template/screens/screen/../.."):
+        src = deepcopy(src)
 
         container = new_container()
         hosts = ET.SubElement(container, 'templates')
-        hosts.append(host)
-        for child in host:
-            if child.tag not in ('screens', 'name', 'template'):
-                host.remove(child)
+        host = ET.SubElement(hosts, 'template')
 
-        for screens in host.findall("./screens/screen/.."):
-            for screen in screens:
-                screens.clear()
-                screens.append(screen)
+        for child in src:
+            if child.tag in ('name', 'template'):
+                ET.SubElement(host, child.tag).text = child.text
+        screens = ET.SubElement(host, 'screens')
 
-                yield 'templates/template/screens/screen', container, screen.find('name').text
+        for screen in src.findall("./screens/screen"):
+            screens.clear()
+            screens.append(screen)
+
+            yield 'templates/template/screens/screen', container, screen.find('name').text
+
+    for trigger in root.findall("./triggers/trigger"):
+        trigger = trigger.copy()
+        container = new_container()
+        hosts = ET.SubElement(container, 'triggers')
+        hosts.append(trigger)
+        yield 'triggers/trigger', container, trigger.find('name').text
 
 
 def new_root():

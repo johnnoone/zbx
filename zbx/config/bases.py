@@ -70,8 +70,9 @@ class Model(object):
             field.set_default(self, value)
 
     def children(self):
-        fields = self._fields.keys()
-        for key in fields:
+        for key, field in self._fields.items():
+            if field.virtual:
+                continue
             value = getattr(self, key)
             if value is not None:
                 yield key, value
