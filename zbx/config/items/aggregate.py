@@ -3,7 +3,7 @@
     zbx.config.item.aggregate
     ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    see https://www.zabbix.com/documentation/2.0/manual/config/items/itemtypes/aggregate
+    see https://www.zabbix.com/documentation/2.0/manual/config/items/itemtypes/aggregate  # NOQA
 
 """
 
@@ -13,27 +13,29 @@ import logging
 
 from . import Item
 from ..fields import Field
+from zbx.util import escape
+from zbx.util import format_timeperiod
 
 
 class AggregateKeyField(Field):
     def __get__(self, obj, type=None):
         groups = obj.groups or ['<not set>']
         if len(groups) > 1:
-            groups = '[{}]'.format(','.join(repr(group) for group in groups))
+            groups = escape(groups)
         elif len(groups) == 1:
             for e in groups:
-                groups = repr(e)
+                groups = escape(e)
                 break
 
-        tpl = '{groupfunc}[{groups},"{key}",{itemfunc},{timeperiod}]'
-        timeperiod = obj.timeperiod or 0
+        tpl = '{groupfunc}[{groups},{key},{itemfunc},{timeperiod}]'
+        timeperiod = format_timeperiod(obj.timeperiod or 0)
         groupfunc = obj.groupfunc
         itemfunc = obj.itemfunc
         key = obj._values[self.key]
 
         return tpl.format(groupfunc=groupfunc,
                           groups=groups,
-                          key=key,
+                          key=escape(key),
                           itemfunc=itemfunc,
                           timeperiod=timeperiod)
 

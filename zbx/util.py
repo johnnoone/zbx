@@ -1,5 +1,82 @@
+"""
+
+    zbx.util
+    ~~~~~~~~
+
+"""
+
+__all__ = ['escape', 'format_timeperiod', 'parse_timeperiod',
+           'load', 'memoize']
+
 from functools import wraps
 import importlib
+try:
+    import simple_json as json
+except ImportError:
+    import json
+from datetime import timedelta
+import re
+from six import integer_types
+from six import string_types
+
+
+def escape(value):
+    """escape value for zabbix"""
+    return json.dumps(value, separators=',:')
+
+
+TIMEPERIOD_PATTERN = re.compile(r'^(?P<time>\d+)(?P<resolution>[smhdw])?$')
+
+
+def format_timeperiod(value):
+    """
+    Format value to a suffixed time unit.
+
+    For example, it will convert `str('86400')` to `str('1d')`.
+
+    The available suffixes are:
+
+    :s: seconds
+    :m: minutes
+    :h: hours
+    :d: days
+    :w: weeks
+
+    """
+
+    time, resolution = parse_timeperiod(value)
+
+    for current_resolution, next_resolution, div in (
+        ('s', 'm', 60),
+        ('m', 'h', 60),
+        ('h', 'd', 24),
+        ('d', 'w', 7),
+    ):
+
+        # try to compress as possible:
+        if resolution == current_resolution and not time % div:
+            time /= div
+            resolution = next_resolution
+
+    return '{}{}'.format(time, resolution)
+
+
+def parse_timeperiod(value):
+    if isinstance(value, timedelta):
+        time = value.total_seconds()
+        resolution = 's'
+    elif isinstance(value, string_types):
+        try:
+            time, resolution = TIMEPERIOD_PATTERN.search(value).groups()
+            time = int(time)
+        except:
+            raise ValueError('{value} cannot be parsed as a timeperiod'.format(value))  # NOQA
+    elif isinstance(value, integer_types):
+            time, resolution = value, 's'
+    else:
+        raise ValueError('{!r} cannot be casted as a timeperiod'.format(value))
+
+    return time, resolution or 's'
 
 
 def memoize(func):
