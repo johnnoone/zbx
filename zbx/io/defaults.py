@@ -1,6 +1,6 @@
 """
-    zbx.builder.defaults
-    ~~~~~~~~~~~~~~~~~~~~
+    zbx.io.defaults
+    ~~~~~~~~~~~~~~~
 
     Defines all zabbix defaults
 """

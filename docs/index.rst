@@ -16,6 +16,7 @@ Contents:
    usage
    api
    config
+   io
    contributing
    authors
    history
