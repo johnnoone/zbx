@@ -5,17 +5,19 @@
 
 """
 
-__all__ = ['escape', 'format_timeperiod', 'parse_timeperiod',
+__all__ = ['copied', 'escape', 'format_timeperiod', 'parse_timeperiod',
            'load', 'memoize']
 
+from copy import deepcopy
+from datetime import timedelta
 from functools import wraps
 import importlib
+import re
 try:
     import simple_json as json
 except ImportError:
     import json
-from datetime import timedelta
-import re
+
 from six import integer_types
 from six import string_types
 
@@ -101,7 +103,7 @@ def load(path, start_package=None):
 
     if not start_package:
         if '.' not in path or path.startswith('.'):
-            raise ValueError('class_path must be absolute')
+            raise ValueError('class_path must be absolute', path)
     else:
         if '.' not in path:
             path = '{}.{}'.format(start_package, path)
@@ -113,3 +115,17 @@ def load(path, start_package=None):
 
     mod = importlib.import_module(path)
     return getattr(mod, attr)
+
+
+def copied(func):
+    """
+    Decorator that cache and returns copy of results.
+    """
+
+    func = memoize(func)
+
+    @wraps(func)
+    def wrapper(*args):
+        return deepcopy(func(*args))
+
+    return wrapper

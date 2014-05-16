@@ -5,6 +5,8 @@
 
 """
 
+from __future__ import absolute_import
+
 __all__ = ['Reference', 'Collection']
 
 from collections import MutableSet
@@ -18,7 +20,7 @@ class Reference(object):
     def __init__(self, model, parent, default=None, append_host=False):
         self.append_host = append_host
         if isinstance(model, str):
-            model = load(model, __package__)
+            model = load(model, 'zbx.config')
         self.model = model
         self.parent = parent
         self.instance = None
@@ -50,7 +52,7 @@ class Collection(MutableSet):
     def __init__(self, model, parent, instances=None):
         logging.debug('p: %s m: %s', parent.__class__, model.__class__)
         if isinstance(model, str):
-            model = load(model, __package__)
+            model = load(model, 'zbx.config')
         self.model = model
         self.parent = parent
         self.instances = []

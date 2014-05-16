@@ -5,6 +5,8 @@
 
 """
 
+from __future__ import absolute_import
+
 __all__ = ['ColorField', 'ElasticField', 'Field',
            'FieldBase', 'FixedSizeField', 'ReferenceField', 'SetField']
 

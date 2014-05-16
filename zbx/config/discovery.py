@@ -5,6 +5,8 @@
 
 """
 
+from __future__ import absolute_import
+
 from .bases import Model
 from .fields import Field, SetField
 

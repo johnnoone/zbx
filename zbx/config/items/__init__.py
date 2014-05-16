@@ -5,6 +5,8 @@
 
 """
 
+from __future__ import absolute_import
+
 __all__ = ['Item', 'ValueMap']
 
 import logging
@@ -120,8 +122,8 @@ class Item(Model):
             'key': self.key,
         }
 
-        Host = load('Host', __package__.rpartition('.')[0])
-        Template = load('Template', __package__.rpartition('.')[0])
+        Host = load('zbx.config.Host')
+        Template = load('zbx.config.Template')
         chaining = [self]
         for parent in self.ancestors():
             chaining.append(parent)

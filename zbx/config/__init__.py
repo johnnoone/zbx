@@ -5,6 +5,8 @@
 
 """
 
+from __future__ import absolute_import
+
 __all__ = ['Application', 'DiscoveryRule', 'Config', 'Graph', 'GraphItem',
            'Group', 'Host', 'Interface', 'Item', 'Macro', 'Screen',
            'ScreenItem', 'Template', 'Trigger', 'ValueMap']

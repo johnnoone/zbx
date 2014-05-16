@@ -5,6 +5,8 @@
 
 """
 
+from __future__ import absolute_import
+
 __all__ = ['ModelBase', 'Model']
 
 from six import add_metaclass

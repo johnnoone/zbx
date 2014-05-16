@@ -5,6 +5,8 @@
 
 """
 
+from __future__ import absolute_import
+
 __all__ = ['Host', 'Interface', 'Template']
 
 from .bases import Model

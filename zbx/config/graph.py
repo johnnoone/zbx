@@ -5,6 +5,8 @@
 
 """
 
+from __future__ import absolute_import
+
 __all__ = ['Graph', 'GraphItem']
 
 import logging
@@ -82,8 +84,8 @@ class Graph(Model):
             'name': self.name,
         }
 
-        Host = load('Host', __package__)
-        Template = load('Template', __package__)
+        Host = load('zbx.config.Host')
+        Template = load('zbx.config.Template')
         chaining = [self]
         for parent in self.ancestors():
             chaining.append(parent)

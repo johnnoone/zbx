@@ -7,6 +7,8 @@
 
 """
 
+from __future__ import absolute_import
+
 __all__ = ['AggregateItem', 'AvgItem', 'SumItem']
 
 import logging
