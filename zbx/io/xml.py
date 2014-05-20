@@ -26,6 +26,10 @@ from .defaults import rules
 
 
 class XmlDumper(object):
+    """
+    Dump conf to xml
+    """
+
     def __init__(self, conf):
         if not isinstance(conf, Config):
             raise ValueError('Config only')
@@ -44,7 +48,10 @@ class XmlDumper(object):
 
     def __iter__(self):
         """
-        Iter thru relevant parts
+        Importing a full xml document into zabbix may fails.
+
+        This method allow to generate smaller xml files, which
+        are inteded to be imported in the order their are generated.
         """
 
         root = self.compiled

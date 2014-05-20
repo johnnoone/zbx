@@ -77,7 +77,7 @@ class Api(object):
         if not method in WITHOUT_AUTH:
             auth_token = auth_token or self.authenticate()
 
-        return cast(self._caller(method, params, auth_token, **api_args))
+        return cast(self._caller(method, params, auth_token))
 
     def authenticate(self, reset=False):
         """
